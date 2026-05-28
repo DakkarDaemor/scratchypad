@@ -216,7 +216,7 @@ export default function ScratchyPad() {
   return (
     <div style={{
       fontFamily: "'DM Sans', sans-serif", background: '#f7f6f4', color: '#2a2825',
-      height: '100vh', display: 'flex', flexDirection: 'column',
+      height: '100dvh', display: 'flex', flexDirection: 'column',
       overflow: 'hidden', position: 'relative',
     }}>
       <TopBar
