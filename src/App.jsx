@@ -257,7 +257,7 @@ export default function ScratchyPad() {
               onOpenFile={loadFromDrive}
               onNewTab={session.addNewTab}
             />
-          : <div style={{ width: sidebarOpen ? 220 : 0, overflow: 'hidden', flexShrink: 0, transition: 'width 0.25s ease' }}>
+          : <div style={{ width: sidebarOpen ? 220 : 0, overflow: 'hidden', flexShrink: 0, transition: 'width 0.25s ease', alignSelf: 'stretch' }}>
               <Sidebar
                 open={sidebarOpen}
                 isMobile={false}
