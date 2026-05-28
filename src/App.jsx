@@ -10,12 +10,12 @@ const KEYS = {
 const FONTS = `
   @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap');
   * { box-sizing: border-box; }
-  ::selection { background: #c49a5c33; }
+  ::selection { background: #9b85c433; }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
-  textarea::placeholder { color: #333; }
-  input::placeholder { color: #333; }
+  ::-webkit-scrollbar-thumb { background: #c8c0d8; border-radius: 2px; }
+  textarea::placeholder { color: #aaa8b8; }
+  input::placeholder { color: #aaa8b8; }
 `;
 
 const AI_ACTIONS = ['Summarize', 'Improve', 'Fix grammar', 'Shorten', 'IT ↔ EN'];
@@ -191,13 +191,13 @@ export default function ScratchyPad() {
 
   /* ── Stats ── */
   const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const statusColor = { ok: '#7a9f6a', err: '#c46a6a', warn: '#c49a5c', info: '#c49a5c' };
+  const statusColor = { ok: '#7a9f6a', err: '#c46a6a', warn: '#9b85c4', info: '#9b85c4' };
 
   return (
     <div style={{
       fontFamily: "'DM Sans', sans-serif",
-      background: '#0d0d0d',
-      color: '#e5ddd0',
+      background: '#f7f6f4',
+      color: '#2a2825',
       height: '100vh',
       display: 'flex',
       flexDirection: 'column',
@@ -209,18 +209,18 @@ export default function ScratchyPad() {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '9px 16px',
-        borderBottom: '1px solid #1e1e1e',
-        background: '#111',
+        borderBottom: '1px solid #e2dedd',
+        background: '#f1f0ee',
         flexShrink: 0,
       }}>
         <span style={{
-          fontSize: 13, fontWeight: 500, color: '#c49a5c',
+          fontSize: 13, fontWeight: 500, color: '#9b85c4',
           letterSpacing: '0.01em', marginRight: 4, userSelect: 'none',
         }}>
           ScratchyPad
         </span>
 
-        <div style={{ width: 1, height: 14, background: '#2a2a2a' }} />
+        <div style={{ width: 1, height: 14, background: '#d0ccc8' }} />
 
         <input
           value={filename}
@@ -228,7 +228,7 @@ export default function ScratchyPad() {
           spellCheck={false}
           style={{
             background: 'transparent', border: 'none', outline: 'none',
-            color: '#7a7060', fontFamily: "'DM Mono', monospace",
+            color: '#7a7588', fontFamily: "'DM Mono', monospace",
             fontSize: 12, width: 180,
           }}
         />
@@ -236,7 +236,7 @@ export default function ScratchyPad() {
         <div style={{ flex: 1 }} />
 
         {status.msg && (
-          <span style={{ fontSize: 11, color: statusColor[status.type] || '#c49a5c' }}>
+          <span style={{ fontSize: 11, color: statusColor[status.type] || '#9b85c4' }}>
             {status.msg}
           </span>
         )}
@@ -264,7 +264,7 @@ export default function ScratchyPad() {
             resize: 'none', overflowY: 'auto',
             padding: '36px 40px',
             fontSize: 17, lineHeight: 1.8,
-            color: '#e5ddd0',
+            color: '#2a2825',
             fontFamily: "'Lora', Georgia, serif",
           }}
         />
@@ -274,30 +274,30 @@ export default function ScratchyPad() {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 6,
         padding: '7px 16px',
-        borderTop: '1px solid #1a1a1a',
-        background: '#0f0f0f',
+        borderTop: '1px solid #e5e0de',
+        background: '#f3f2f0',
         flexShrink: 0, flexWrap: 'wrap',
       }}>
-        <span style={{ fontSize: 9, color: '#3a3530', textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: 4 }}>
+        <span style={{ fontSize: 9, color: '#c0b8cc', textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: 4 }}>
           AI
         </span>
         {AI_ACTIONS.map(a => (
           <button key={a} disabled={loading} onClick={() => runAI(a)}
             style={{
               background: 'transparent',
-              border: '1px solid #222', color: '#6a6055',
+              border: '1px solid #ddd8e8', color: '#8a8098',
               padding: '3px 10px', fontSize: 11, cursor: 'pointer',
               borderRadius: 3, fontFamily: "'DM Sans', sans-serif",
               transition: 'border-color 0.15s, color 0.15s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#c49a5c'; e.currentTarget.style.color = '#c49a5c'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = '#222';    e.currentTarget.style.color = '#6a6055'; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#9b85c4'; e.currentTarget.style.color = '#9b85c4'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#ddd8e8'; e.currentTarget.style.color = '#8a8098'; }}
           >
             {a}
           </button>
         ))}
         <div style={{ flex: 1 }} />
-        <span style={{ fontSize: 10, color: '#2e2a25' }}>
+        <span style={{ fontSize: 10, color: '#c5bfd0' }}>
           {words} w · {text.length} ch
         </span>
       </div>
@@ -327,7 +327,7 @@ export default function ScratchyPad() {
         <Overlay onClose={() => setPanel(null)}>
           <Modal title="Open from Dropbox">
             {files.length === 0
-              ? <p style={{ fontSize: 13, color: '#554f46' }}>No files in /scratchypad yet.</p>
+              ? <p style={{ fontSize: 13, color: '#a09898' }}>No files in /scratchypad yet.</p>
               : files.map(f => (
                   <FileRow key={f.path_lower} name={f.name} onClick={() => loadFile(f.path_lower)} />
                 ))
@@ -344,10 +344,10 @@ export default function ScratchyPad() {
         <Overlay onClose={() => setPanel(null)}>
           <Modal title={aiLabel} wide>
             <div style={{
-              background: '#0d0d0d', border: '1px solid #222',
+              background: '#f0edf8', border: '1px solid #dbd5e8',
               borderRadius: 4, padding: '16px 18px',
               fontSize: 14, lineHeight: 1.75,
-              color: '#d5cdc0', fontFamily: "'Lora', Georgia, serif",
+              color: '#363240', fontFamily: "'Lora', Georgia, serif",
               whiteSpace: 'pre-wrap', overflowY: 'auto',
               maxHeight: '52vh', marginBottom: 16,
             }}>
@@ -369,9 +369,9 @@ export default function ScratchyPad() {
 function Btn({ children, onClick, disabled, accent, style = {} }) {
   const [hov, setHov] = useState(false);
   const base = {
-    background: accent ? (hov ? '#d4aa6c' : '#c49a5c') : 'transparent',
-    border: `1px solid ${accent ? '#c49a5c' : (hov ? '#444' : '#272727')}`,
-    color: accent ? '#0d0d0d' : (hov ? '#c8bfb0' : '#7a7060'),
+    background: accent ? (hov ? '#8470b8' : '#9b85c4') : 'transparent',
+    border: `1px solid ${accent ? '#9b85c4' : (hov ? '#b0a8c0' : '#dedad5')}`,
+    color: accent ? '#ffffff' : (hov ? '#4a4260' : '#8a8598'),
     padding: '5px 13px', fontSize: 12, cursor: disabled ? 'not-allowed' : 'pointer',
     borderRadius: 3, fontFamily: "'DM Sans', sans-serif",
     fontWeight: accent ? '500' : '400',
@@ -392,7 +392,7 @@ function Overlay({ children, onClose }) {
     <div onClick={e => e.target === e.currentTarget && onClose()}
       style={{
         position: 'absolute', inset: 0,
-        background: 'rgba(0,0,0,0.75)',
+        background: 'rgba(130,120,150,0.35)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         zIndex: 200,
       }}>
@@ -404,11 +404,11 @@ function Overlay({ children, onClose }) {
 function Modal({ title, children, wide }) {
   return (
     <div style={{
-      background: '#141414', border: '1px solid #252525',
+      background: '#ffffff', border: '1px solid #dbd5e8',
       borderRadius: 8, padding: '26px 28px',
       width: wide ? 580 : 440, maxWidth: '92vw',
     }}>
-      <div style={{ fontSize: 13, fontWeight: 500, color: '#c49a5c', marginBottom: 22, letterSpacing: '0.02em' }}>
+      <div style={{ fontSize: 13, fontWeight: 500, color: '#9b85c4', marginBottom: 22, letterSpacing: '0.02em' }}>
         {title}
       </div>
       {children}
@@ -419,11 +419,11 @@ function Modal({ title, children, wide }) {
 function Field({ label, hint, children }) {
   return (
     <div style={{ marginBottom: 18 }}>
-      <label style={{ display: 'block', fontSize: 10, color: '#6a6055', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
+      <label style={{ display: 'block', fontSize: 10, color: '#8a8098', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
         {label}
       </label>
       {children}
-      {hint && <div style={{ fontSize: 10, color: '#383330', marginTop: 4 }}>{hint}</div>}
+      {hint && <div style={{ fontSize: 10, color: '#bbb5c8', marginTop: 4 }}>{hint}</div>}
     </div>
   );
 }
@@ -432,8 +432,8 @@ function Inp({ type = 'text', value, onChange, placeholder }) {
   return (
     <input type={type} value={value} onChange={onChange} placeholder={placeholder}
       style={{
-        width: '100%', background: '#0d0d0d',
-        border: '1px solid #252525', color: '#e5ddd0',
+        width: '100%', background: '#f7f6f4',
+        border: '1px solid #d8d2e5', color: '#2a2825',
         padding: '7px 10px', fontSize: 12,
         fontFamily: "'DM Mono', monospace",
         borderRadius: 4, outline: 'none',
@@ -453,9 +453,9 @@ function FileRow({ name, onClick }) {
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{
         padding: '9px 12px', cursor: 'pointer', borderRadius: 4,
-        fontSize: 12, fontFamily: "'DM Mono', monospace", color: '#9a8f7e',
-        background: hov ? '#1a1a1a' : 'transparent',
-        border: `1px solid ${hov ? '#2a2a2a' : 'transparent'}`,
+        fontSize: 12, fontFamily: "'DM Mono', monospace", color: '#7a7288',
+        background: hov ? '#ece8f5' : 'transparent',
+        border: `1px solid ${hov ? '#d8d0e8' : 'transparent'}`,
         marginBottom: 3, transition: 'all 0.1s',
       }}>
       {name}
