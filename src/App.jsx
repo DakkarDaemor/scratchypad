@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
 // Replace with your Google Cloud OAuth 2.0 Web Client ID
-const GDRIVE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+const GDRIVE_CLIENT_ID = '29731384499-qnl2dp9jvihpvlqumprmuccpelp7mf9a.apps.googleusercontent.com.apps.googleusercontent.com';
 
 const KEYS = {
   GDRIVE_TOKEN:  'sp_gdrive_token',
