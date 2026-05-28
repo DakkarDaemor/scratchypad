@@ -12,9 +12,7 @@ export function LoginScreen({ onLogin, loading, status }) {
       alignItems: 'center', justifyContent: 'center', gap: 20,
     }}>
       <style>{FONTS}</style>
-      <div style={{ fontSize: 20, fontWeight: 500, color: '#9b85c4', letterSpacing: '0.02em' }}>
-        ScratchyPad
-      </div>
+      <img src="/logo.png" alt="ScratchyPad" style={{ width: 200, height: 'auto' }} />
       <Btn accent onClick={onLogin} disabled={loading} style={{ padding: '8px 24px', fontSize: 13 }}>
         {loading ? '…' : 'Login with Google'}
       </Btn>
