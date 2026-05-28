@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-function TabItem({ tab, isActive, isSecondary, onClick, onClose, onRename }) {
+function TabItem({ tab, isActive, isSecondary, isMobile, onClick, onClose, onRename }) {
   const [hov,      setHov]      = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [draft,    setDraft]    = useState('');
@@ -73,14 +73,14 @@ function TabItem({ tab, isActive, isSecondary, onClick, onClose, onRename }) {
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
           color: '#c0b8cc', fontSize: 14, padding: '0 2px',
-          opacity: hov ? 1 : 0, transition: 'opacity 0.1s', lineHeight: 1, flexShrink: 0,
+          opacity: (hov || isMobile) ? 1 : 0, transition: 'opacity 0.1s', lineHeight: 1, flexShrink: 0,
         }}
       >×</button>
     </div>
   );
 }
 
-export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, onSelectTab, onCloseTab, onNewTab, onRenameTab }) {
+export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, isMobile, onSelectTab, onCloseTab, onNewTab, onRenameTab }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'stretch',
@@ -97,6 +97,7 @@ export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, on
             tab={tab}
             isActive={isActive}
             isSecondary={isSecondary}
+            isMobile={isMobile}
             onClick={() => onSelectTab(tab.id)}
             onClose={() => onCloseTab(tab.id)}
             onRename={name => onRenameTab(tab.id, name)}

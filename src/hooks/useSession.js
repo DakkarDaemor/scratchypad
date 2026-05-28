@@ -25,6 +25,12 @@ export function useSession() {
   const openInTab = (filename, text, fileId) => {
     const existing = fileId ? tabs.find(t => t.fileId === fileId) : null;
     if (existing) { setFocusedTab(existing.id); return; }
+    const emptyPlaceholder = tabs.find(t => !t.fileId && !t.dirty && t.text === '' && t.filename === filename);
+    if (emptyPlaceholder) {
+      setTabs(prev => prev.map(t => t.id === emptyPlaceholder.id ? { ...t, text, fileId } : t));
+      setFocusedTab(emptyPlaceholder.id);
+      return;
+    }
     const tab = mkTab(filename, text, fileId);
     setTabs(prev => [...prev, tab]);
     setFocusedTab(tab.id);

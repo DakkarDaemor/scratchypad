@@ -237,6 +237,7 @@ export default function ScratchyPad() {
         leftTabId={session.leftTabId}
         rightTabId={session.rightTabId}
         focusedPane={session.focusedPane}
+        isMobile={isMobile}
         onSelectTab={session.setFocusedTab}
         onCloseTab={session.closeTab}
         onNewTab={session.addNewTab}
