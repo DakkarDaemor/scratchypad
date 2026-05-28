@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FONTS } from './constants';
+import { FONTS, KEYS, FONT_MIN, FONT_MAX, FONT_DEFAULT } from './constants';
 import { mkTab } from './utils';
 import { useGDrive } from './hooks/useGDrive';
 import { useAI } from './hooks/useAI';
@@ -29,6 +29,10 @@ export default function ScratchyPad() {
   const [driveFiles,  setDriveFiles]  = useState([]);
   const [driveLoad,   setDriveLoad]   = useState(false);
   const [winW,        setWinW]        = useState(window.innerWidth);
+  const [fontSize,    setFontSize]    = useState(() => {
+    const n = Number(localStorage.getItem(KEYS.FONT_SIZE));
+    return n >= FONT_MIN && n <= FONT_MAX ? n : FONT_DEFAULT;
+  });
 
   const leftTaRef  = useRef(null);
   const rightTaRef = useRef(null);
@@ -54,6 +58,10 @@ export default function ScratchyPad() {
   useEffect(() => {
     if (!canSplit && session.rightTabId) session.setRightTabId(null);
   }, [canSplit, session.rightTabId]);
+
+  useEffect(() => {
+    localStorage.setItem(KEYS.FONT_SIZE, String(fontSize));
+  }, [fontSize]);
 
   useEffect(() => {
     const tok = localStorage.getItem('sp_gdrive_token');
@@ -87,6 +95,8 @@ export default function ScratchyPad() {
       } catch {}
     }));
   };
+
+  const resizeFont = delta => setFontSize(prev => Math.min(FONT_MAX, Math.max(FONT_MIN, prev + delta)));
 
   const getSelected = () => {
     const ref = session.focusedPane === 'left' ? leftTaRef : rightTaRef;
@@ -256,6 +266,8 @@ export default function ScratchyPad() {
             isMobile={isMobile}
             onFocus={() => session.setFocusedPane('left')}
             onChange={text => session.updateTab(session.leftTabId, { text, dirty: true })}
+            fontSize={fontSize}
+            onFontResize={resizeFont}
           />
           {session.rightTabId && (
             <>
@@ -268,6 +280,8 @@ export default function ScratchyPad() {
                 isMobile={isMobile}
                 onFocus={() => session.setFocusedPane('right')}
                 onChange={text => session.updateTab(session.rightTabId, { text, dirty: true })}
+                fontSize={fontSize}
+                onFontResize={resizeFont}
               />
             </>
           )}

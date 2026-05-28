@@ -6,7 +6,12 @@ export const KEYS = {
   GDRIVE_FOLDER: 'sp_gdrive_folder',
   GDRIVE_CONFIG: 'sp_gdrive_config_id',
   SESSION:       'sp_session',
+  FONT_SIZE:     'sp_font_size',
 };
+
+export const FONT_MIN     = 12;
+export const FONT_MAX     = 32;
+export const FONT_DEFAULT = 17;
 
 export const FONTS = `
   @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap');
