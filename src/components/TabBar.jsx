@@ -63,9 +63,16 @@ function TabItem({ tab, isActive, isSecondary, isMobile, onClick, onClose, onRen
             flex: 1, fontSize: 11, color: isActive ? '#2a2825' : '#9a92a8',
             fontFamily: "'DM Mono', monospace",
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            display: 'flex', alignItems: 'center', gap: 4,
           }}
         >
-          {tab.dirty ? '· ' : ''}{tab.filename}
+          {tab.dirty && (
+            <span style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: '#f59e0b', flexShrink: 0, display: 'inline-block',
+            }} />
+          )}
+          {tab.filename}
         </span>
       )}
       <button
