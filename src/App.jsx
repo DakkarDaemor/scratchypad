@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 
+// Replace with your Google Cloud OAuth 2.0 Web Client ID
+const GDRIVE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+
 const KEYS = {
-  GDRIVE_CLIENT: 'sp_gdrive_client',
   GDRIVE_TOKEN:  'sp_gdrive_token',
   GDRIVE_EXPIRY: 'sp_gdrive_expiry',
   GDRIVE_FOLDER: 'sp_gdrive_folder',
-  CLAUDE:  'sp_claude',
-  DRAFT:   'sp_draft',
-  FNAME:   'sp_filename',
+  GDRIVE_CONFIG: 'sp_gdrive_config_id',
+  DRAFT: 'sp_draft',
+  FNAME: 'sp_filename',
 };
 
 const FONTS = `
@@ -32,18 +34,17 @@ const AI_PROMPTS = {
 };
 
 export default function ScratchyPad() {
-  const [text,        setText]        = useState('');
-  const [filename,    setFilename]    = useState('scratch.txt');
-  const [clientId,    setClientId]    = useState('');
-  const [claudeKey,   setClaudeKey]   = useState('');
-  const [panel,       setPanel]       = useState(null);
-  const [status,      setStatus]      = useState({ msg: '', type: 'info' });
-  const [loading,     setLoading]     = useState(false);
-  const [files,       setFiles]       = useState([]);
-  const [aiResult,    setAiResult]    = useState('');
-  const [aiLabel,     setAiLabel]     = useState('');
-  const [tmpClientId, setTmpClientId] = useState('');
-  const [tmpClaude,   setTmpClaude]   = useState('');
+  const [text,       setText]       = useState('');
+  const [filename,   setFilename]   = useState('scratch.txt');
+  const [claudeKey,  setClaudeKey]  = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [panel,      setPanel]      = useState(null);
+  const [status,     setStatus]     = useState({ msg: '', type: 'info' });
+  const [loading,    setLoading]    = useState(false);
+  const [files,      setFiles]      = useState([]);
+  const [aiResult,   setAiResult]   = useState('');
+  const [aiLabel,    setAiLabel]    = useState('');
+  const [tmpClaude,  setTmpClaude]  = useState('');
   const taRef = useRef(null);
 
   /* ── Boot ── */
@@ -55,14 +56,16 @@ export default function ScratchyPad() {
   }, []);
 
   useEffect(() => {
-    const gc = localStorage.getItem(KEYS.GDRIVE_CLIENT) || '';
-    const c  = localStorage.getItem(KEYS.CLAUDE)        || '';
-    const t  = localStorage.getItem(KEYS.DRAFT)         || '';
-    const fn = localStorage.getItem(KEYS.FNAME)         || 'scratch.txt';
-    setClientId(gc); setTmpClientId(gc);
-    setClaudeKey(c); setTmpClaude(c);
-    setText(t);
-    setFilename(fn);
+    setText(localStorage.getItem(KEYS.DRAFT) || '');
+    setFilename(localStorage.getItem(KEYS.FNAME) || 'scratch.txt');
+    // Auto-restore session if token still valid
+    const tok = localStorage.getItem(KEYS.GDRIVE_TOKEN);
+    const exp = Number(localStorage.getItem(KEYS.GDRIVE_EXPIRY) || 0);
+    if (tok && Date.now() < exp) {
+      loadConfig(tok)
+        .then(() => setIsLoggedIn(true))
+        .catch(() => {});
+    }
   }, []);
 
   useEffect(() => { localStorage.setItem(KEYS.DRAFT, text); }, [text]);
@@ -80,15 +83,14 @@ export default function ScratchyPad() {
     return sel.trim() ? sel : text;
   };
 
-  /* ── Google Drive ── */
+  /* ── Auth ── */
   const getToken = () => new Promise((resolve, reject) => {
-    if (!clientId) { reject(new Error('Set Google Client ID in settings')); return; }
     if (!window.google?.accounts?.oauth2) { reject(new Error('Google API not loaded')); return; }
     const tok = localStorage.getItem(KEYS.GDRIVE_TOKEN);
     const exp = Number(localStorage.getItem(KEYS.GDRIVE_EXPIRY) || 0);
     if (tok && Date.now() < exp) { resolve(tok); return; }
     const tc = window.google.accounts.oauth2.initTokenClient({
-      client_id: clientId,
+      client_id: GDRIVE_CLIENT_ID,
       scope: 'https://www.googleapis.com/auth/drive.file',
       callback: (resp) => {
         if (resp.error) { reject(new Error(resp.error_description || resp.error)); return; }
@@ -102,6 +104,90 @@ export default function ScratchyPad() {
     tc.requestAccessToken();
   });
 
+  const login = async () => {
+    setLoading(true);
+    try {
+      const tok = await getToken();
+      await loadConfig(tok);
+      setIsLoggedIn(true);
+    } catch (e) { flash(`Login failed: ${e.message}`, 'err'); }
+    setLoading(false);
+  };
+
+  const logout = () => {
+    const tok = localStorage.getItem(KEYS.GDRIVE_TOKEN);
+    if (tok && window.google?.accounts?.oauth2) {
+      window.google.accounts.oauth2.revoke(tok);
+    }
+    [KEYS.GDRIVE_TOKEN, KEYS.GDRIVE_EXPIRY, KEYS.GDRIVE_FOLDER, KEYS.GDRIVE_CONFIG]
+      .forEach(k => localStorage.removeItem(k));
+    setIsLoggedIn(false);
+    setClaudeKey('');
+    setTmpClaude('');
+    setPanel(null);
+  };
+
+  /* ── Config (Claude key stored in Drive) ── */
+  const loadConfig = async (tok) => {
+    const cachedId = localStorage.getItem(KEYS.GDRIVE_CONFIG);
+    if (cachedId) {
+      const r = await fetch(`https://www.googleapis.com/drive/v3/files/${cachedId}?alt=media`, {
+        headers: { Authorization: `Bearer ${tok}` },
+      });
+      if (r.ok) {
+        const cfg = await r.json().catch(() => ({}));
+        setClaudeKey(cfg.claudeKey || '');
+        setTmpClaude(cfg.claudeKey || '');
+        return;
+      }
+      localStorage.removeItem(KEYS.GDRIVE_CONFIG);
+    }
+    // Search for existing config file
+    const q = encodeURIComponent("name='scratchypad_config.json' and trashed=false");
+    const sr = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`, {
+      headers: { Authorization: `Bearer ${tok}` },
+    });
+    if (!sr.ok) return;
+    const found = await sr.json();
+    if (found.files?.length) {
+      const id = found.files[0].id;
+      localStorage.setItem(KEYS.GDRIVE_CONFIG, id);
+      const r = await fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`, {
+        headers: { Authorization: `Bearer ${tok}` },
+      });
+      if (r.ok) {
+        const cfg = await r.json().catch(() => ({}));
+        setClaudeKey(cfg.claudeKey || '');
+        setTmpClaude(cfg.claudeKey || '');
+      }
+    } else {
+      await writeConfigFile(tok, '');
+    }
+  };
+
+  const writeConfigFile = async (tok, key) => {
+    const body = JSON.stringify({ claudeKey: key });
+    const cachedId = localStorage.getItem(KEYS.GDRIVE_CONFIG);
+    if (cachedId) {
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${cachedId}?uploadType=media`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+        body,
+      });
+    } else {
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify({ name: 'scratchypad_config.json' })], { type: 'application/json' }));
+      form.append('file', new Blob([body], { type: 'application/json' }));
+      const cr = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${tok}` },
+        body: form,
+      });
+      if (cr.ok) { const f = await cr.json(); localStorage.setItem(KEYS.GDRIVE_CONFIG, f.id); }
+    }
+  };
+
+  /* ── Drive ── */
   const ensureFolder = async (tok) => {
     const cached = localStorage.getItem(KEYS.GDRIVE_FOLDER);
     if (cached) return cached;
@@ -234,24 +320,53 @@ export default function ScratchyPad() {
   };
 
   /* ── Settings ── */
-  const saveSettings = () => {
-    if (tmpClientId !== clientId) {
-      localStorage.removeItem(KEYS.GDRIVE_TOKEN);
-      localStorage.removeItem(KEYS.GDRIVE_EXPIRY);
-      localStorage.removeItem(KEYS.GDRIVE_FOLDER);
-    }
-    localStorage.setItem(KEYS.GDRIVE_CLIENT, tmpClientId);
-    localStorage.setItem(KEYS.CLAUDE,        tmpClaude);
-    setClientId(tmpClientId);
-    setClaudeKey(tmpClaude);
-    setPanel(null);
-    flash('Settings saved ✓', 'ok');
+  const saveSettings = async () => {
+    setLoading(true);
+    try {
+      const tok = await getToken();
+      await writeConfigFile(tok, tmpClaude);
+      setClaudeKey(tmpClaude);
+      setPanel(null);
+      flash('Settings saved ✓', 'ok');
+    } catch (e) { flash(`Save failed: ${e.message}`, 'err'); }
+    setLoading(false);
   };
 
   /* ── Stats ── */
   const words = text.trim() ? text.trim().split(/\s+/).length : 0;
   const statusColor = { ok: '#7a9f6a', err: '#c46a6a', warn: '#9b85c4', info: '#9b85c4' };
 
+  /* ── Login screen ── */
+  if (!isLoggedIn) {
+    return (
+      <div style={{
+        fontFamily: "'DM Sans', sans-serif",
+        background: '#f7f6f4',
+        color: '#2a2825',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 20,
+      }}>
+        <style>{FONTS}</style>
+        <div style={{ fontSize: 20, fontWeight: 500, color: '#9b85c4', letterSpacing: '0.02em' }}>
+          ScratchyPad
+        </div>
+        <Btn accent onClick={login} disabled={loading} style={{ padding: '8px 24px', fontSize: 13 }}>
+          {loading ? '…' : 'Login with Google'}
+        </Btn>
+        {status.msg && (
+          <span style={{ fontSize: 11, color: statusColor[status.type] || '#9b85c4' }}>
+            {status.msg}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  /* ── Main app ── */
   return (
     <div style={{
       fontFamily: "'DM Sans', sans-serif",
@@ -304,9 +419,7 @@ export default function ScratchyPad() {
         <Btn onClick={saveToGDrive} disabled={loading} accent>
           {loading ? '…' : 'Save'}
         </Btn>
-        <Btn onClick={() => { setTmpClientId(clientId); setTmpClaude(claudeKey); setPanel('settings'); }}>
-          ⚙
-        </Btn>
+        <Btn onClick={() => { setTmpClaude(claudeKey); setPanel('settings'); }}>⚙</Btn>
       </div>
 
       {/* ── Editor ── */}
@@ -365,17 +478,18 @@ export default function ScratchyPad() {
       {panel === 'settings' && (
         <Overlay onClose={() => setPanel(null)}>
           <Modal title="Settings">
-            <Field label="Google OAuth Client ID"
-              hint="console.cloud.google.com → APIs & Services → Credentials → Web application client ID">
-              <Inp value={tmpClientId} onChange={e => setTmpClientId(e.target.value)} placeholder="xxxx.apps.googleusercontent.com" />
-            </Field>
             <Field label="Claude API Key"
-              hint="console.anthropic.com — needed to use AI features">
+              hint="console.anthropic.com — saved to your Google Drive">
               <Inp type="password" value={tmpClaude} onChange={e => setTmpClaude(e.target.value)} placeholder="sk-ant-…" />
             </Field>
-            <Row>
-              <Btn onClick={() => setPanel(null)}>Cancel</Btn>
-              <Btn accent onClick={saveSettings}>Save</Btn>
+            <Row style={{ justifyContent: 'space-between' }}>
+              <Btn onClick={logout} style={{ color: '#c46a6a', borderColor: '#e8c8c8' }}>Logout</Btn>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Btn onClick={() => setPanel(null)}>Cancel</Btn>
+                <Btn accent onClick={saveSettings} disabled={loading}>
+                  {loading ? '…' : 'Save'}
+                </Btn>
+              </div>
             </Row>
           </Modal>
         </Overlay>
