@@ -290,7 +290,11 @@ export default function ScratchyPad() {
     setAiLabel(action);
     flash(`Running "${action}"…`);
     try {
-      const headers = { 'Content-Type': 'application/json' };
+      const headers = {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      };
       if (claudeKey) headers['x-api-key'] = claudeKey;
       const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
