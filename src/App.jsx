@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 
 const KEYS = {
-  DROPBOX: 'sp_dropbox',
+  GDRIVE_CLIENT: 'sp_gdrive_client',
+  GDRIVE_TOKEN:  'sp_gdrive_token',
+  GDRIVE_EXPIRY: 'sp_gdrive_expiry',
+  GDRIVE_FOLDER: 'sp_gdrive_folder',
   CLAUDE:  'sp_claude',
   DRAFT:   'sp_draft',
   FNAME:   'sp_filename',
@@ -31,7 +34,7 @@ const AI_PROMPTS = {
 export default function ScratchyPad() {
   const [text,        setText]        = useState('');
   const [filename,    setFilename]    = useState('scratch.txt');
-  const [dropboxTok,  setDropboxTok]  = useState('');
+  const [clientId,    setClientId]    = useState('');
   const [claudeKey,   setClaudeKey]   = useState('');
   const [panel,       setPanel]       = useState(null);
   const [status,      setStatus]      = useState({ msg: '', type: 'info' });
@@ -39,7 +42,7 @@ export default function ScratchyPad() {
   const [files,       setFiles]       = useState([]);
   const [aiResult,    setAiResult]    = useState('');
   const [aiLabel,     setAiLabel]     = useState('');
-  const [tmpDbox,     setTmpDbox]     = useState('');
+  const [tmpClientId, setTmpClientId] = useState('');
   const [tmpClaude,   setTmpClaude]   = useState('');
   const taRef = useRef(null);
 
@@ -52,12 +55,12 @@ export default function ScratchyPad() {
   }, []);
 
   useEffect(() => {
-    const d  = localStorage.getItem(KEYS.DROPBOX) || '';
-    const c  = localStorage.getItem(KEYS.CLAUDE)  || '';
-    const t  = localStorage.getItem(KEYS.DRAFT)   || '';
-    const fn = localStorage.getItem(KEYS.FNAME)   || 'scratch.txt';
-    setDropboxTok(d); setTmpDbox(d);
-    setClaudeKey(c);  setTmpClaude(c);
+    const gc = localStorage.getItem(KEYS.GDRIVE_CLIENT) || '';
+    const c  = localStorage.getItem(KEYS.CLAUDE)        || '';
+    const t  = localStorage.getItem(KEYS.DRAFT)         || '';
+    const fn = localStorage.getItem(KEYS.FNAME)         || 'scratch.txt';
+    setClientId(gc); setTmpClientId(gc);
+    setClaudeKey(c); setTmpClaude(c);
     setText(t);
     setFilename(fn);
   }, []);
@@ -77,65 +80,116 @@ export default function ScratchyPad() {
     return sel.trim() ? sel : text;
   };
 
-  /* ── Dropbox ── */
-  const dbHeaders = (extra = {}) => ({
-    Authorization: `Bearer ${dropboxTok}`,
-    ...extra,
+  /* ── Google Drive ── */
+  const getToken = () => new Promise((resolve, reject) => {
+    if (!clientId) { reject(new Error('Set Google Client ID in settings')); return; }
+    if (!window.google?.accounts?.oauth2) { reject(new Error('Google API not loaded')); return; }
+    const tok = localStorage.getItem(KEYS.GDRIVE_TOKEN);
+    const exp = Number(localStorage.getItem(KEYS.GDRIVE_EXPIRY) || 0);
+    if (tok && Date.now() < exp) { resolve(tok); return; }
+    const tc = window.google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback: (resp) => {
+        if (resp.error) { reject(new Error(resp.error_description || resp.error)); return; }
+        const newTok = resp.access_token;
+        localStorage.setItem(KEYS.GDRIVE_TOKEN, newTok);
+        localStorage.setItem(KEYS.GDRIVE_EXPIRY, String(Date.now() + (resp.expires_in - 60) * 1000));
+        resolve(newTok);
+      },
+      error_callback: (e) => reject(new Error(e.type || 'Auth failed')),
+    });
+    tc.requestAccessToken();
   });
 
-  const saveToDropbox = async () => {
-    if (!dropboxTok) { flash('Set Dropbox token in settings', 'warn'); return; }
+  const ensureFolder = async (tok) => {
+    const cached = localStorage.getItem(KEYS.GDRIVE_FOLDER);
+    if (cached) return cached;
+    const q = encodeURIComponent("name='scratchypad' and mimeType='application/vnd.google-apps.folder' and trashed=false");
+    const r = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`, {
+      headers: { Authorization: `Bearer ${tok}` },
+    });
+    if (!r.ok) throw new Error(`Drive error ${r.status}`);
+    const data = await r.json();
+    if (data.files?.length) {
+      localStorage.setItem(KEYS.GDRIVE_FOLDER, data.files[0].id);
+      return data.files[0].id;
+    }
+    const cr = await fetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'scratchypad', mimeType: 'application/vnd.google-apps.folder' }),
+    });
+    if (!cr.ok) throw new Error(`Create folder failed ${cr.status}`);
+    const folder = await cr.json();
+    localStorage.setItem(KEYS.GDRIVE_FOLDER, folder.id);
+    return folder.id;
+  };
+
+  const saveToGDrive = async () => {
     setLoading(true);
     flash('Saving…');
     try {
-      const path = `/scratchypad/${filename}`;
-      const r = await fetch('https://content.dropboxapi.com/2/files/upload', {
-        method: 'POST',
-        headers: {
-          ...dbHeaders({ 'Content-Type': 'application/octet-stream' }),
-          'Dropbox-API-Arg': JSON.stringify({ path, mode: 'overwrite' }),
-        },
-        body: new TextEncoder().encode(text),
+      const tok = await getToken();
+      const folderId = await ensureFolder(tok);
+      const q = encodeURIComponent(`name='${filename}' and '${folderId}' in parents and trashed=false`);
+      const sr = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`, {
+        headers: { Authorization: `Bearer ${tok}` },
       });
-      if (!r.ok) { const e = await r.json(); throw new Error(e.error_summary || r.status); }
-      flash('Saved to Dropbox ✓', 'ok');
+      if (!sr.ok) throw new Error(`Search failed ${sr.status}`);
+      const found = await sr.json();
+      const content = new Blob([text], { type: 'text/plain' });
+      if (found.files?.length) {
+        const ur = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${found.files[0].id}?uploadType=media`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'text/plain' },
+          body: content,
+        });
+        if (!ur.ok) throw new Error(`Update failed ${ur.status}`);
+      } else {
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify({ name: filename, parents: [folderId] })], { type: 'application/json' }));
+        form.append('file', content);
+        const cr = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${tok}` },
+          body: form,
+        });
+        if (!cr.ok) throw new Error(`Upload failed ${cr.status}`);
+      }
+      flash('Saved to Google Drive ✓', 'ok');
     } catch (e) { flash(`Save failed: ${e.message}`, 'err'); }
     setLoading(false);
   };
 
-  const openDropbox = async () => {
-    if (!dropboxTok) { flash('Set Dropbox token in settings', 'warn'); return; }
+  const openGDrive = async () => {
     setLoading(true);
     try {
-      const r = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
-        method: 'POST',
-        headers: dbHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ path: '/scratchypad' }),
+      const tok = await getToken();
+      const folderId = await ensureFolder(tok);
+      const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
+      const r = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,modifiedTime)&orderBy=modifiedTime+desc`, {
+        headers: { Authorization: `Bearer ${tok}` },
       });
-      if (r.status === 409) { setFiles([]); setPanel('files'); setLoading(false); return; }
-      if (!r.ok) { const e = await r.json(); throw new Error(e.error_summary || r.status); }
+      if (!r.ok) throw new Error(`List failed ${r.status}`);
       const data = await r.json();
-      setFiles((data.entries || []).filter(e => e['.tag'] === 'file'));
+      setFiles(data.files || []);
       setPanel('files');
     } catch (e) { flash(`Open failed: ${e.message}`, 'err'); }
     setLoading(false);
   };
 
-  const loadFile = async (path) => {
+  const loadGFile = async (fileId, name) => {
     setLoading(true);
     try {
-      const r = await fetch('https://content.dropboxapi.com/2/files/download', {
-        method: 'POST',
-        headers: {
-          ...dbHeaders(),
-          'Dropbox-API-Arg': JSON.stringify({ path }),
-        },
+      const tok = await getToken();
+      const r = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+        headers: { Authorization: `Bearer ${tok}` },
       });
-      if (!r.ok) throw new Error('Download failed');
+      if (!r.ok) throw new Error(`Download failed ${r.status}`);
       setText(await r.text());
-      const fn = path.split('/').pop();
-      setFilename(fn);
-      localStorage.setItem(KEYS.FNAME, fn);
+      setFilename(name);
+      localStorage.setItem(KEYS.FNAME, name);
       setPanel(null);
       flash('Loaded ✓', 'ok');
     } catch (e) { flash(`Load failed: ${e.message}`, 'err'); }
@@ -181,9 +235,14 @@ export default function ScratchyPad() {
 
   /* ── Settings ── */
   const saveSettings = () => {
-    localStorage.setItem(KEYS.DROPBOX, tmpDbox);
-    localStorage.setItem(KEYS.CLAUDE,  tmpClaude);
-    setDropboxTok(tmpDbox);
+    if (tmpClientId !== clientId) {
+      localStorage.removeItem(KEYS.GDRIVE_TOKEN);
+      localStorage.removeItem(KEYS.GDRIVE_EXPIRY);
+      localStorage.removeItem(KEYS.GDRIVE_FOLDER);
+    }
+    localStorage.setItem(KEYS.GDRIVE_CLIENT, tmpClientId);
+    localStorage.setItem(KEYS.CLAUDE,        tmpClaude);
+    setClientId(tmpClientId);
     setClaudeKey(tmpClaude);
     setPanel(null);
     flash('Settings saved ✓', 'ok');
@@ -241,11 +300,11 @@ export default function ScratchyPad() {
           </span>
         )}
 
-        <Btn onClick={openDropbox}   disabled={loading}>Open</Btn>
-        <Btn onClick={saveToDropbox} disabled={loading} accent>
+        <Btn onClick={openGDrive}   disabled={loading}>Open</Btn>
+        <Btn onClick={saveToGDrive} disabled={loading} accent>
           {loading ? '…' : 'Save'}
         </Btn>
-        <Btn onClick={() => { setTmpDbox(dropboxTok); setTmpClaude(claudeKey); setPanel('settings'); }}>
+        <Btn onClick={() => { setTmpClientId(clientId); setTmpClaude(claudeKey); setPanel('settings'); }}>
           ⚙
         </Btn>
       </div>
@@ -306,9 +365,9 @@ export default function ScratchyPad() {
       {panel === 'settings' && (
         <Overlay onClose={() => setPanel(null)}>
           <Modal title="Settings">
-            <Field label="Dropbox Access Token"
-              hint="dropbox.com/developers/apps → your app → Generate access token">
-              <Inp type="password" value={tmpDbox} onChange={e => setTmpDbox(e.target.value)} placeholder="sl.xxxx…" />
+            <Field label="Google OAuth Client ID"
+              hint="console.cloud.google.com → APIs & Services → Credentials → Web application client ID">
+              <Inp value={tmpClientId} onChange={e => setTmpClientId(e.target.value)} placeholder="xxxx.apps.googleusercontent.com" />
             </Field>
             <Field label="Claude API Key"
               hint="console.anthropic.com — needed to use AI features">
@@ -325,11 +384,11 @@ export default function ScratchyPad() {
       {/* ── File list modal ── */}
       {panel === 'files' && (
         <Overlay onClose={() => setPanel(null)}>
-          <Modal title="Open from Dropbox">
+          <Modal title="Open from Google Drive">
             {files.length === 0
-              ? <p style={{ fontSize: 13, color: '#a09898' }}>No files in /scratchypad yet.</p>
+              ? <p style={{ fontSize: 13, color: '#a09898' }}>No files in scratchypad/ yet.</p>
               : files.map(f => (
-                  <FileRow key={f.path_lower} name={f.name} onClick={() => loadFile(f.path_lower)} />
+                  <FileRow key={f.id} name={f.name} onClick={() => loadGFile(f.id, f.name)} />
                 ))
             }
             <Row style={{ marginTop: 16 }}>
