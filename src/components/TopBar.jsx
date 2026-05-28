@@ -19,7 +19,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar, status, canSplit, hasSpli
         <IconBtn title={hasSplit ? 'Close split' : 'Split view'} active={hasSplit} onClick={onToggleSplit}>◫</IconBtn>
       )}
       <Btn onClick={onSave} disabled={loading} accent>{loading ? '…' : 'Save'}</Btn>
-      <Btn onClick={onOpenSettings}>⚙</Btn>
+      <Btn onClick={onOpenSettings} style={{ fontSize: 20, lineHeight: '15px' }}>⚙</Btn>
     </div>
   );
 }
