@@ -10,7 +10,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar, status, canSplit, hasSpli
       background: '#f1f0ee', flexShrink: 0,
     }}>
       <IconBtn title="Toggle sidebar" active={sidebarOpen} onClick={onToggleSidebar}>≡</IconBtn>
-      <span style={{ fontSize: 12, fontWeight: 500, color: '#9b85c4', userSelect: 'none' }}>ScratchyPad</span>
+      <span style={{ fontSize: 15, fontWeight: 500, color: '#9b85c4', userSelect: 'none' }}>ScratchyPad</span>
       <div style={{ flex: 1 }} />
       {status.msg && (
         <span style={{ fontSize: 11, color: STATUS_COLOR[status.type] }}>{status.msg}</span>
