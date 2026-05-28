@@ -24,12 +24,15 @@ export const FONTS = `
   input::placeholder { color: #aaa8b8; }
 `;
 
-export const AI_ACTIONS = ['Summarize', 'Improve', 'Fix grammar', 'Shorten', 'IT ↔ EN'];
+export const AI_ACTIONS = ['Summarize', 'Improve', 'Fix grammar', 'Shorten', 'Expand', 'Bullet points', 'Tone', 'IT ↔ EN'];
 
 export const AI_PROMPTS = {
-  'Summarize':   c => `Summarize this text concisely. Reply only with the summary.\n\n${c}`,
-  'Improve':     c => `Improve clarity and style. Keep the same language. Reply only with the improved text.\n\n${c}`,
-  'Fix grammar': c => `Fix grammar and typos. Keep style and language. Reply only with the corrected text.\n\n${c}`,
-  'Shorten':     c => `Make this shorter while keeping key points. Same language. Reply only with the result.\n\n${c}`,
-  'IT ↔ EN':     c => `If this text is in Italian translate to English; if in English translate to Italian. Reply only with the translation.\n\n${c}`,
+  'Summarize':     c => `Summarize this text concisely. Reply only with the summary.\n\n${c}`,
+  'Improve':       c => `Improve clarity and style. Keep the same language. Reply only with the improved text.\n\n${c}`,
+  'Fix grammar':   c => `Fix grammar and typos. Keep style and language. Reply only with the corrected text.\n\n${c}`,
+  'Shorten':       c => `Make this shorter while keeping key points. Same language. Reply only with the result.\n\n${c}`,
+  'Expand':        c => `Expand this into a fuller, well-written text. Keep the same language and voice. Reply only with the result.\n\n${c}`,
+  'Bullet points': c => `Convert this text into a clear bullet-point list. If it is already a list, convert it back to prose. Keep the same language. Reply only with the result.\n\n${c}`,
+  'Tone':          c => `If this text sounds informal, make it formal. If it sounds formal, make it informal. Keep the same language and meaning. Reply only with the result.\n\n${c}`,
+  'IT ↔ EN':       c => `If this text is in Italian translate to English; if in English translate to Italian. Reply only with the translation.\n\n${c}`,
 };
