@@ -69,7 +69,7 @@ function TabItem({ tab, isActive, isSecondary, isMobile, onClick, onClose, onRen
           {tab.dirty && (
             <span style={{
               width: 7, height: 7, borderRadius: '50%',
-              background: '#f59e0b', flexShrink: 0, display: 'inline-block',
+              background: 'rgb(184, 130, 229)', flexShrink: 0, display: 'inline-block',
             }} />
           )}
           {tab.filename}
