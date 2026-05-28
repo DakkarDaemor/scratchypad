@@ -59,7 +59,12 @@ export default function ScratchyPad() {
     const tok = localStorage.getItem('sp_gdrive_token');
     const exp = Number(localStorage.getItem('sp_gdrive_expiry') || 0);
     if (tok && Date.now() < exp) {
-      drive.loadConfig(tok).then(key => { setClaudeKey(key); setTmpClaude(key); setIsLoggedIn(true); }).catch(() => {});
+      drive.loadConfig(tok)
+        .then(key => {
+          setClaudeKey(key); setTmpClaude(key); setIsLoggedIn(true);
+          syncOpenTabs(session.tabs);
+        })
+        .catch(() => {});
     }
   }, []);
 
@@ -71,6 +76,16 @@ export default function ScratchyPad() {
   const flash = (msg, type = 'info') => {
     setStatus({ msg, type });
     setTimeout(() => setStatus({ msg: '', type: 'info' }), 3000);
+  };
+
+  const syncOpenTabs = async tabs => {
+    const toSync = tabs.filter(t => t.fileId && !t.dirty);
+    await Promise.all(toSync.map(async tab => {
+      try {
+        const text = await drive.downloadFile(tab.fileId);
+        session.updateTab(tab.id, { text });
+      } catch {}
+    }));
   };
 
   const getSelected = () => {
@@ -87,10 +102,12 @@ export default function ScratchyPad() {
   const login = async () => {
     setLoading(true);
     try {
-      const tok = await drive.getToken();
-      const key = await drive.loadConfig(tok);
+      const tok  = await drive.getToken();
+      const key  = await drive.loadConfig(tok);
+      const tabs = session.tabs;
       setClaudeKey(key); setTmpClaude(key);
       setIsLoggedIn(true);
+      syncOpenTabs(tabs);
     } catch (e) { flash(`Login failed: ${e.message}`, 'err'); }
     setLoading(false);
   };
@@ -213,6 +230,7 @@ export default function ScratchyPad() {
         onSelectTab={session.setFocusedTab}
         onCloseTab={session.closeTab}
         onNewTab={session.addNewTab}
+        onRenameTab={(id, name) => session.updateTab(id, { filename: name })}
       />
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
@@ -238,7 +256,6 @@ export default function ScratchyPad() {
             isMobile={isMobile}
             onFocus={() => session.setFocusedPane('left')}
             onChange={text => session.updateTab(session.leftTabId, { text, dirty: true })}
-            onRename={filename => session.updateTab(session.leftTabId, { filename })}
           />
           {session.rightTabId && (
             <>
@@ -251,7 +268,6 @@ export default function ScratchyPad() {
                 isMobile={isMobile}
                 onFocus={() => session.setFocusedPane('right')}
                 onChange={text => session.updateTab(session.rightTabId, { text, dirty: true })}
-                onRename={filename => session.updateTab(session.rightTabId, { filename })}
               />
             </>
           )}

@@ -1,7 +1,32 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
-function TabItem({ tab, isActive, isSecondary, onClick, onClose }) {
-  const [hov, setHov] = useState(false);
+function TabItem({ tab, isActive, isSecondary, onClick, onClose, onRename }) {
+  const [hov,      setHov]      = useState(false);
+  const [renaming, setRenaming] = useState(false);
+  const [draft,    setDraft]    = useState('');
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (renaming) inputRef.current?.select();
+  }, [renaming]);
+
+  const startRename = e => {
+    e.stopPropagation();
+    setDraft(tab.filename);
+    setRenaming(true);
+  };
+
+  const commitRename = () => {
+    const name = draft.trim();
+    if (name && name !== tab.filename) onRename(name);
+    setRenaming(false);
+  };
+
+  const onKeyDown = e => {
+    if (e.key === 'Enter') commitRename();
+    if (e.key === 'Escape') setRenaming(false);
+  };
+
   return (
     <div
       onClick={onClick}
@@ -12,18 +37,37 @@ function TabItem({ tab, isActive, isSecondary, onClick, onClose }) {
         padding: '0 8px 0 12px',
         borderRight: '1px solid #e2dedd',
         cursor: 'pointer', flexShrink: 0,
-        minWidth: 80, maxWidth: 160,
+        minWidth: 80, maxWidth: 180,
         background: isActive ? '#fff' : (hov ? '#f3f0f8' : 'transparent'),
         borderBottom: `2px solid ${isActive ? '#9b85c4' : isSecondary ? '#c8c0d8' : 'transparent'}`,
       }}
     >
-      <span style={{
-        flex: 1, fontSize: 11, color: isActive ? '#2a2825' : '#9a92a8',
-        fontFamily: "'DM Mono', monospace",
-        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-      }}>
-        {tab.dirty ? '· ' : ''}{tab.filename}
-      </span>
+      {renaming ? (
+        <input
+          ref={inputRef}
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onBlur={commitRename}
+          onKeyDown={onKeyDown}
+          onClick={e => e.stopPropagation()}
+          style={{
+            flex: 1, fontSize: 11, fontFamily: "'DM Mono', monospace",
+            background: '#f0edf8', border: '1px solid #c8c0d8', borderRadius: 2,
+            color: '#2a2825', padding: '1px 4px', outline: 'none', minWidth: 0,
+          }}
+        />
+      ) : (
+        <span
+          onDoubleClick={startRename}
+          style={{
+            flex: 1, fontSize: 11, color: isActive ? '#2a2825' : '#9a92a8',
+            fontFamily: "'DM Mono', monospace",
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}
+        >
+          {tab.dirty ? '· ' : ''}{tab.filename}
+        </span>
+      )}
       <button
         onClick={e => { e.stopPropagation(); onClose(); }}
         style={{
@@ -36,7 +80,7 @@ function TabItem({ tab, isActive, isSecondary, onClick, onClose }) {
   );
 }
 
-export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, onSelectTab, onCloseTab, onNewTab }) {
+export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, onSelectTab, onCloseTab, onNewTab, onRenameTab }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'stretch',
@@ -55,6 +99,7 @@ export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, on
             isSecondary={isSecondary}
             onClick={() => onSelectTab(tab.id)}
             onClose={() => onCloseTab(tab.id)}
+            onRename={name => onRenameTab(tab.id, name)}
           />
         );
       })}
