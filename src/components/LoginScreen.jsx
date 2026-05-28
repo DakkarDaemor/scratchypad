@@ -12,7 +12,7 @@ export function LoginScreen({ onLogin, loading, status }) {
       alignItems: 'center', justifyContent: 'center', gap: 20,
     }}>
       <style>{FONTS}</style>
-      <img src="/logo.png" alt="ScratchyPad" style={{ width: 200, height: 'auto' }} />
+      <img src={`${import.meta.env.BASE_URL}logo.png`} alt="ScratchyPad" style={{ width: 200, height: 'auto' }} />
       <Btn accent onClick={onLogin} disabled={loading} style={{ padding: '8px 24px', fontSize: 13 }}>
         {loading ? '…' : 'Login with Google'}
       </Btn>
