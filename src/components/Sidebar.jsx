@@ -24,6 +24,7 @@ export function Sidebar({ open = true, isMobile, files, loading, openTabFileIds,
   return (
     <div style={{
       width: isMobile ? '100%' : 220,
+      height: 'stretch',
       position: isMobile ? 'absolute' : 'relative',
       inset: isMobile ? 0 : 'auto',
       zIndex: isMobile ? 100 : 'auto',
