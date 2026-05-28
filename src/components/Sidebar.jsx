@@ -20,7 +20,7 @@ function SidebarFile({ name, open, onClick }) {
   );
 }
 
-export function Sidebar({ isMobile, files, loading, openTabFileIds, onClose, onRefresh, onOpenFile, onNewTab }) {
+export function Sidebar({ open = true, isMobile, files, loading, openTabFileIds, onClose, onRefresh, onOpenFile, onNewTab }) {
   return (
     <div style={{
       width: isMobile ? '100%' : 220,
@@ -30,6 +30,8 @@ export function Sidebar({ isMobile, files, loading, openTabFileIds, onClose, onR
       background: '#f0edf8', borderRight: '1px solid #dbd5e8',
       display: 'flex', flexDirection: 'column',
       flexShrink: 0, overflow: 'hidden',
+      transform: isMobile ? (open ? 'translateX(0)' : 'translateX(-100%)') : 'none',
+      transition: isMobile ? 'transform 0.25s ease' : 'none',
     }}>
       <div style={{
         display: 'flex', alignItems: 'center',

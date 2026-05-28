@@ -245,18 +245,32 @@ export default function ScratchyPad() {
       />
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {sidebarOpen && (
-          <Sidebar
-            isMobile={isMobile}
-            files={driveFiles}
-            loading={driveLoad}
-            openTabFileIds={new Set(session.tabs.map(t => t.fileId).filter(Boolean))}
-            onClose={() => setSidebarOpen(false)}
-            onRefresh={refreshDriveFiles}
-            onOpenFile={loadFromDrive}
-            onNewTab={session.addNewTab}
-          />
-        )}
+        {isMobile
+          ? <Sidebar
+              open={sidebarOpen}
+              isMobile={true}
+              files={driveFiles}
+              loading={driveLoad}
+              openTabFileIds={new Set(session.tabs.map(t => t.fileId).filter(Boolean))}
+              onClose={() => setSidebarOpen(false)}
+              onRefresh={refreshDriveFiles}
+              onOpenFile={loadFromDrive}
+              onNewTab={session.addNewTab}
+            />
+          : <div style={{ width: sidebarOpen ? 220 : 0, overflow: 'hidden', flexShrink: 0, transition: 'width 0.25s ease' }}>
+              <Sidebar
+                open={sidebarOpen}
+                isMobile={false}
+                files={driveFiles}
+                loading={driveLoad}
+                openTabFileIds={new Set(session.tabs.map(t => t.fileId).filter(Boolean))}
+                onClose={() => setSidebarOpen(false)}
+                onRefresh={refreshDriveFiles}
+                onOpenFile={loadFromDrive}
+                onNewTab={session.addNewTab}
+              />
+            </div>
+        }
 
         <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
           <EditorPane
