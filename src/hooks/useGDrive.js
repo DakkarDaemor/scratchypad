@@ -116,7 +116,7 @@ export function useGDrive() {
     const r        = await authFetch(tok, `/drive/v3/files?q=${q}&fields=files(id,name,modifiedTime)&orderBy=modifiedTime+desc`);
     if (!r.ok) throw new Error(`List failed ${r.status}`);
     const data = await r.json();
-    return (data.files || []).filter(f => !f.name.endsWith('.bak'));
+    return data.files || [];
   };
 
   const saveFile = async tab => {

@@ -36,19 +36,21 @@ export function useSession() {
     setFocusedTab(tab.id);
   };
 
-  const addNewTab = () => {
-    const taken = new Set(tabs.map(t => t.filename));
+  const addNewTab = (takenExternal = new Set()) => {
+    const taken = new Set([...tabs.map(t => t.filename), ...takenExternal]);
     const name = taken.has('scratch.txt') ? nextFilename('scratch.txt', taken) : 'scratch.txt';
     const t = mkTab(name);
     setTabs(prev => [...prev, t]);
     setFocusedTab(t.id);
   };
 
-  const closeTab = id => {
+  const closeTab = (id, takenExternal = new Set()) => {
     setTabs(prev => {
       const next = prev.filter(t => t.id !== id);
       if (next.length === 0) {
-        const t = mkTab();
+        const taken = new Set(takenExternal);
+        const name = taken.has('scratch.txt') ? nextFilename('scratch.txt', taken) : 'scratch.txt';
+        const t = mkTab(name);
         setLeftTabId(t.id);
         setRightTabId(null);
         return [t];

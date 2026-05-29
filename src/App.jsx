@@ -150,6 +150,20 @@ export default function ScratchyPad() {
     setDriveLoad(false);
   };
 
+  const driveNames = () => new Set(driveFiles.map(f => f.name));
+  const handleNewTab   = () => session.addNewTab(driveNames());
+  const handleCloseTab = id => session.closeTab(id, driveNames());
+  const handleRenameTab = (id, name) => {
+    const tab = session.getTab(id);
+    if (session.tabs.some(t => t.id !== id && t.filename === name)) {
+      flash(`"${name}" è già usato da un'altra tab`, 'warn'); return;
+    }
+    if (driveFiles.some(f => f.name === name && f.id !== tab?.fileId)) {
+      flash(`"${name}" è un file già esistente`, 'warn'); return;
+    }
+    session.updateTab(id, { filename: name });
+  };
+
   const saveTab = async (tabId = session.focusedId) => {
     const tab = session.getTab(tabId);
     if (!tab) return;
@@ -242,7 +256,7 @@ export default function ScratchyPad() {
     files: driveFiles, loading: driveLoad,
     openTabFileIds: new Set(session.tabs.map(t => t.fileId).filter(Boolean)),
     onRefresh: refreshDriveFiles, onOpenFile: loadFromDrive,
-    onNewTab: session.addNewTab,
+    onNewTab: handleNewTab,
     onDeleteFile: (fileId, name) => setDeleteConfirm({ fileId, name }),
   };
 
@@ -273,9 +287,9 @@ export default function ScratchyPad() {
         focusedPane={session.focusedPane}
         isMobile={isMobile}
         onSelectTab={session.setFocusedTab}
-        onCloseTab={session.closeTab}
-        onNewTab={session.addNewTab}
-        onRenameTab={(id, name) => session.updateTab(id, { filename: name })}
+        onCloseTab={handleCloseTab}
+        onNewTab={handleNewTab}
+        onRenameTab={handleRenameTab}
       />
 
       <div className={s.content}>

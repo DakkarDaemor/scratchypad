@@ -86,6 +86,23 @@
 .file:hover .deleteBtn { opacity: 1; }
 .deleteBtn:hover { color: #c46a6a; }
 
+/* ── Backup section ── */
+.bakSection {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #e4ddf4;
+}
+.bakLabel {
+  display: block;
+  font-size: 8px;
+  color: #c0b8cc;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0 8px 4px;
+}
+.file.bak { color: #a8a0bc; }
+.file.bak:hover { background: #e8e0f4; }
+
 /* ── Footer ── */
 .newBtn {
   margin: 8px;
