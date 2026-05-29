@@ -1,10 +1,15 @@
 import { Overlay, Modal, Field, Inp, Btn, Row } from './ui';
 
 const PROVIDERS = [
-  { id: 'claude',     label: 'Claude',      sub: 'Anthropic — console.anthropic.com' },
-  { id: 'openrouter', label: 'OpenRouter',  sub: 'Multi-model — free models available' },
-  { id: 'groq',       label: 'Groq',        sub: 'Fast inference — free tier, console.groq.com' },
+  { id: 'claude',     label: 'Claude',      sub: 'Anthropic',              keyUrl: 'https://console.anthropic.com/settings/keys' },
+  { id: 'openrouter', label: 'OpenRouter',  sub: 'multi-model · free tier', keyUrl: 'https://openrouter.ai/settings/keys' },
+  { id: 'groq',       label: 'Groq',        sub: 'fast inference · free tier', keyUrl: 'https://console.groq.com/keys' },
 ];
+
+const A = ({ href, children }) => (
+  <a href={href} target="_blank" rel="noreferrer"
+    style={{ color: '#9b85c4', textDecoration: 'underline' }}>{children}</a>
+);
 
 export function SettingsModal({ config, onConfigChange, loading, onSave, onLogout, onClose }) {
   const set = (key, val) => onConfigChange({ ...config, [key]: val });
@@ -32,13 +37,18 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
                 />
                 <span style={{ fontWeight: 500, fontSize: 14 }}>{p.label}</span>
                 <span style={{ color: '#8a8480', fontSize: 12 }}>{p.sub}</span>
+                <a href={p.keyUrl} target="_blank" rel="noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  style={{ marginLeft: 'auto', fontSize: 11, color: '#9b85c4', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                  get API key ↗
+                </a>
               </label>
             ))}
           </div>
         </Field>
 
         {config.provider === 'claude' && (
-          <Field label="Claude API Key" hint="saved to your Google Drive">
+          <Field label="Claude API Key" hint={<>saved to your Google Drive · <A href="https://console.anthropic.com/settings/keys">console.anthropic.com ↗</A></>}>
             <Inp
               type="password"
               value={config.claudeKey}
@@ -50,7 +60,7 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
 
         {config.provider === 'openrouter' && (
           <>
-            <Field label="OpenRouter API Key" hint="openrouter.ai — saved to your Google Drive">
+            <Field label="OpenRouter API Key" hint={<><A href="https://openrouter.ai/settings/keys">openrouter.ai ↗</A> · saved to your Google Drive</>}>
               <Inp
                 type="password"
                 value={config.openrouterKey}
@@ -58,7 +68,7 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
                 placeholder="sk-or-…"
               />
             </Field>
-            <Field label="Model" hint='openrouter.ai/models — append ":free" for free tier'>
+            <Field label="Model" hint={<><A href="https://openrouter.ai/models">browse models ↗</A> · append ":free" for free tier</>}>
               <Inp
                 value={config.openrouterModel}
                 onChange={e => set('openrouterModel', e.target.value)}
@@ -70,7 +80,7 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
 
         {config.provider === 'groq' && (
           <>
-            <Field label="Groq API Key" hint="console.groq.com — free tier, saved to your Google Drive">
+            <Field label="Groq API Key" hint={<><A href="https://console.groq.com/keys">console.groq.com ↗</A> · free tier · saved to your Google Drive</>}>
               <Inp
                 type="password"
                 value={config.groqKey}
@@ -78,7 +88,7 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
                 placeholder="gsk_…"
               />
             </Field>
-            <Field label="Model" hint="console.groq.com/docs/models">
+            <Field label="Model" hint={<><A href="https://console.groq.com/docs/models">available models ↗</A></>}>
               <Inp
                 value={config.groqModel}
                 onChange={e => set('groqModel', e.target.value)}
