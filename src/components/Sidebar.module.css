@@ -48,8 +48,9 @@
 
 /* ── SidebarFile ── */
 .file {
+  display: flex;
+  align-items: center;
   padding: 5px 8px;
-  cursor: pointer;
   border-radius: 3px;
   font-size: 11px;
   font-family: 'DM Mono', monospace;
@@ -57,13 +58,33 @@
   background: transparent;
   margin-bottom: 2px;
   transition: background 0.1s;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .file:hover { background: #e4dff5; }
 .file.open { color: #9b85c4; background: #ece8f5; }
 .file.open:hover { background: #e4dff5; }
+
+.filename {
+  flex: 1;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: #c0b8cc;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 3px;
+  opacity: 0;
+  transition: opacity 0.1s, color 0.1s;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.file:hover .deleteBtn { opacity: 1; }
+.deleteBtn:hover { color: #c46a6a; }
 
 /* ── Footer ── */
 .newBtn {

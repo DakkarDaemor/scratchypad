@@ -1,11 +1,13 @@
 import { STATUS_COLOR } from '../constants';
-import { IconBtn, Btn } from './ui';
+import { IconBtn, Btn } from '../ui';
 import s from './TopBar.module.css';
 
-export function TopBar({ sidebarOpen, onToggleSidebar, status, canSplit, hasSplit, onToggleSplit, loading, onSave, onOpenSettings }) {
+export function TopBar({ canToggleSidebar, sidebarOpen, onToggleSidebar, status, canSplit, hasSplit, onToggleSplit, loading, onSave, onOpenSettings }) {
   return (
     <div className={s.bar}>
-      <IconBtn title="Toggle sidebar" active={sidebarOpen} onClick={onToggleSidebar}>≡</IconBtn>
+      {canToggleSidebar && (
+        <IconBtn title="Toggle sidebar" active={sidebarOpen} onClick={onToggleSidebar}>≡</IconBtn>
+      )}
       <span className={s.title}>ScratchyPad</span>
       <div className={s.spacer} />
       {status.msg && (

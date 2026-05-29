@@ -1,13 +1,16 @@
-import { IconBtn } from './ui';
+import { IconBtn } from '../ui';
 import s from './Sidebar.module.css';
 
-function SidebarFile({ name, open, onClick }) {
+function SidebarFile({ name, open, onClick, onDelete }) {
   return (
-    <div onClick={onClick} className={`${s.file}${open ? ` ${s.open}` : ''}`}>{name}</div>
+    <div className={`${s.file}${open ? ` ${s.open}` : ''}`}>
+      <span className={s.filename} onClick={onClick}>{name}</span>
+      <button className={s.deleteBtn} onClick={e => { e.stopPropagation(); onDelete(); }}>×</button>
+    </div>
   );
 }
 
-export function Sidebar({ open = true, isMobile, files, loading, openTabFileIds, onClose, onRefresh, onOpenFile, onNewTab }) {
+export function Sidebar({ open = true, isMobile, files, loading, openTabFileIds, onClose, onRefresh, onOpenFile, onNewTab, onDeleteFile }) {
   const cls = [s.sidebar, isMobile && s.mobile, isMobile && open && s.open].filter(Boolean).join(' ');
   return (
     <div className={cls}>
@@ -28,6 +31,7 @@ export function Sidebar({ open = true, isMobile, files, loading, openTabFileIds,
                   name={f.name}
                   open={openTabFileIds.has(f.id)}
                   onClick={() => onOpenFile(f.id, f.name)}
+                  onDelete={() => onDeleteFile(f.id, f.name)}
                 />
               ))
         }

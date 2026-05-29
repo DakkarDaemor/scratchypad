@@ -12,27 +12,28 @@ import { EditorPane } from './components/EditorPane';
 import { AIBar } from './components/AIBar';
 import { SettingsModal } from './components/SettingsModal';
 import { AIResultModal } from './components/AIResultModal';
-import { Overlay, Modal, Btn, Row } from './components/ui';
+import { Overlay, Modal, Btn, Row } from './ui';
 import s from './App.module.css';
 
 export default function ScratchyPad() {
   const session = useSession();
   const drive   = useGDrive();
 
-  const [aiConfig,    setAiConfig]    = useState({ ...DEFAULT_AI_CONFIG });
-  const [tmpConfig,   setTmpConfig]   = useState({ ...DEFAULT_AI_CONFIG });
-  const [isLoggedIn,  setIsLoggedIn]  = useState(false);
-  const [panel,       setPanel]       = useState(null);
-  const [status,      setStatus]      = useState({ msg: '', type: 'info' });
-  const [errorDialog, setErrorDialog] = useState('');
-  const [loading,     setLoading]     = useState(false);
-  const [aiResult,    setAiResult]    = useState('');
-  const [aiLabel,     setAiLabel]     = useState('');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [driveFiles,  setDriveFiles]  = useState([]);
-  const [driveLoad,   setDriveLoad]   = useState(false);
-  const [winW,        setWinW]        = useState(window.innerWidth);
-  const [fontSize,    setFontSize]    = useState(() => {
+  const [aiConfig,       setAiConfig]       = useState({ ...DEFAULT_AI_CONFIG });
+  const [tmpConfig,      setTmpConfig]      = useState({ ...DEFAULT_AI_CONFIG });
+  const [isLoggedIn,     setIsLoggedIn]     = useState(false);
+  const [panel,          setPanel]          = useState(null);
+  const [status,         setStatus]         = useState({ msg: '', type: 'info' });
+  const [errorDialog,    setErrorDialog]    = useState('');
+  const [deleteConfirm,  setDeleteConfirm]  = useState(null); // { fileId, name }
+  const [loading,        setLoading]        = useState(false);
+  const [aiResult,       setAiResult]       = useState('');
+  const [aiLabel,        setAiLabel]        = useState('');
+  const [sidebarOpen,    setSidebarOpen]    = useState(false);
+  const [driveFiles,     setDriveFiles]     = useState([]);
+  const [driveLoad,      setDriveLoad]      = useState(false);
+  const [winW,           setWinW]           = useState(window.innerWidth);
+  const [fontSize,       setFontSize]       = useState(() => {
     const n = Number(localStorage.getItem(KEYS.FONT_SIZE));
     return n >= FONT_MIN && n <= FONT_MAX ? n : FONT_DEFAULT;
   });
@@ -40,9 +41,11 @@ export default function ScratchyPad() {
   const leftTaRef  = useRef(null);
   const rightTaRef = useRef(null);
 
-  const ai       = useAI(aiConfig);
-  const isMobile = winW < 680;
-  const canSplit  = winW >= 900;
+  const ai             = useAI(aiConfig);
+  const isMobile       = winW < 680;
+  const canSplit       = winW >= 900;
+  const isLarge        = winW >= 1200;
+  const sidebarVisible = isLarge || sidebarOpen;
 
   /* ── Effects ── */
   useEffect(() => {
@@ -80,8 +83,8 @@ export default function ScratchyPad() {
   }, []);
 
   useEffect(() => {
-    if (sidebarOpen && isLoggedIn) refreshDriveFiles();
-  }, [sidebarOpen, isLoggedIn]);
+    if (sidebarVisible && isLoggedIn) refreshDriveFiles();
+  }, [sidebarVisible, isLoggedIn]);
 
   /* ── Helpers ── */
   const flash = (msg, type = 'info') => {
@@ -155,7 +158,7 @@ export default function ScratchyPad() {
       const savedId = await drive.saveFile(tab);
       session.updateTab(tabId, { fileId: savedId, dirty: false });
       flash('Saved ✓', 'ok');
-      if (sidebarOpen) refreshDriveFiles();
+      if (sidebarVisible) refreshDriveFiles();
     } catch (e) { flash(`Save failed: ${e.message}`, 'err'); }
     setLoading(false);
   };
@@ -165,9 +168,24 @@ export default function ScratchyPad() {
     try {
       const text = await drive.downloadFile(fileId);
       session.openInTab(name, text, fileId);
-      setSidebarOpen(false);
+      if (!isLarge) setSidebarOpen(false);
       flash('Loaded ✓', 'ok');
     } catch (e) { flash(`Load failed: ${e.message}`, 'err'); }
+    setLoading(false);
+  };
+
+  const handleDeleteFile = async () => {
+    if (!deleteConfirm) return;
+    setLoading(true);
+    try {
+      await drive.deleteFile(deleteConfirm.fileId);
+      session.tabs
+        .filter(t => t.fileId === deleteConfirm.fileId)
+        .forEach(t => session.updateTab(t.id, { fileId: null, dirty: true }));
+      flash('Deleted ✓', 'ok');
+      setDeleteConfirm(null);
+      refreshDriveFiles();
+    } catch (e) { flash(e.message, 'err'); setDeleteConfirm(null); }
     setLoading(false);
   };
 
@@ -190,8 +208,8 @@ export default function ScratchyPad() {
     const ta = (session.focusedPane === 'left' ? leftTaRef : rightTaRef).current;
     let newText = aiResult;
     if (ta) {
-      const { selectionStart: s, selectionEnd: e } = ta;
-      if (s !== e) newText = tab.text.substring(0, s) + aiResult + tab.text.substring(e);
+      const { selectionStart: ss, selectionEnd: se } = ta;
+      if (ss !== se) newText = tab.text.substring(0, ss) + aiResult + tab.text.substring(se);
     }
     session.updateTab(session.focusedId, { text: newText, dirty: true });
     setPanel(null); setAiResult('');
@@ -216,9 +234,17 @@ export default function ScratchyPad() {
   };
 
   /* ── Render ── */
-  const focusedTab  = session.getTab(session.focusedId);
-  const focusedText = focusedTab?.text || '';
-  const words       = focusedText.trim() ? focusedText.trim().split(/\s+/).length : 0;
+  const openSettings = () => { setTmpConfig(aiConfig); setPanel('settings'); };
+  const focusedTab   = session.getTab(session.focusedId);
+  const focusedText  = focusedTab?.text || '';
+  const words        = focusedText.trim() ? focusedText.trim().split(/\s+/).length : 0;
+  const sidebarProps = {
+    files: driveFiles, loading: driveLoad,
+    openTabFileIds: new Set(session.tabs.map(t => t.fileId).filter(Boolean)),
+    onRefresh: refreshDriveFiles, onOpenFile: loadFromDrive,
+    onNewTab: session.addNewTab,
+    onDeleteFile: (fileId, name) => setDeleteConfirm({ fileId, name }),
+  };
 
   if (!isLoggedIn) {
     return <LoginScreen onLogin={login} loading={loading} status={status} />;
@@ -227,6 +253,7 @@ export default function ScratchyPad() {
   return (
     <div className={s.app}>
       <TopBar
+        canToggleSidebar={!isLarge}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(o => !o)}
         status={status}
@@ -235,7 +262,7 @@ export default function ScratchyPad() {
         onToggleSplit={session.toggleSplit}
         loading={loading}
         onSave={() => saveTab()}
-        onOpenSettings={() => { setTmpConfig(aiConfig); setPanel('settings'); }}
+        onOpenSettings={openSettings}
       />
 
       <TabBar
@@ -253,29 +280,9 @@ export default function ScratchyPad() {
 
       <div className={s.content}>
         {isMobile
-          ? <Sidebar
-              open={sidebarOpen}
-              isMobile={true}
-              files={driveFiles}
-              loading={driveLoad}
-              openTabFileIds={new Set(session.tabs.map(t => t.fileId).filter(Boolean))}
-              onClose={() => setSidebarOpen(false)}
-              onRefresh={refreshDriveFiles}
-              onOpenFile={loadFromDrive}
-              onNewTab={session.addNewTab}
-            />
-          : <div className={s.sidebarWrapper} style={{ width: sidebarOpen ? 220 : 0 }}>
-              <Sidebar
-                open={sidebarOpen}
-                isMobile={false}
-                files={driveFiles}
-                loading={driveLoad}
-                openTabFileIds={new Set(session.tabs.map(t => t.fileId).filter(Boolean))}
-                onClose={() => setSidebarOpen(false)}
-                onRefresh={refreshDriveFiles}
-                onOpenFile={loadFromDrive}
-                onNewTab={session.addNewTab}
-              />
+          ? <Sidebar open={sidebarOpen} isMobile={true} onClose={() => setSidebarOpen(false)} {...sidebarProps} />
+          : <div className={s.sidebarWrapper} style={{ width: sidebarVisible ? 220 : 0 }}>
+              <Sidebar open={sidebarVisible} isMobile={false} onClose={() => setSidebarOpen(false)} {...sidebarProps} />
             </div>
         }
 
@@ -316,7 +323,7 @@ export default function ScratchyPad() {
         charCount={focusedText.length}
         onAction={runAI}
         aiConfigured={isAiConfigured(aiConfig)}
-        onOpenSettings={() => { setTmpConfig(aiConfig); setPanel('settings'); }}
+        onOpenSettings={openSettings}
       />
 
       {panel === 'settings' && (
@@ -338,6 +345,23 @@ export default function ScratchyPad() {
           onNewTab={applyResultNewTab}
           onApply={applyResult}
         />
+      )}
+
+      {deleteConfirm && (
+        <Overlay onClose={() => setDeleteConfirm(null)} zIndex={300}>
+          <Modal title="Delete file">
+            <p style={{ fontSize: 13, color: '#5a5570', lineHeight: 1.6, marginBottom: 20 }}>
+              Delete <strong>{deleteConfirm.name}</strong>? This cannot be undone.
+            </p>
+            <Row>
+              <Btn onClick={() => setDeleteConfirm(null)}>Cancel</Btn>
+              <Btn onClick={handleDeleteFile} disabled={loading}
+                style={{ background: '#c46a6a', borderColor: '#c46a6a', color: '#fff' }}>
+                {loading ? '…' : 'Delete'}
+              </Btn>
+            </Row>
+          </Modal>
+        </Overlay>
       )}
 
       {errorDialog && (
