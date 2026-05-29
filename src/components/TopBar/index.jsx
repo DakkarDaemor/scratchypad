@@ -6,7 +6,7 @@ export function TopBar({
   canToggleSidebar, sidebarOpen, onToggleSidebar,
   canSplit, hasSplit, onToggleSplit,
   loading, onSave, onOpenSettings,
-  dictationActive, onToggleDictation, dictationSupported,
+  dictationMode, onToggleDictationMode, dictationSupported,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -34,7 +34,7 @@ export function TopBar({
           onClick={() => setMenuOpen(o => !o)}
           style={{ fontSize: 17, lineHeight: '15px', position: 'relative' }}
         >
-          ⚙{dictationActive && <span className={s.badge} />}
+          ⚙{dictationMode && <span className={s.badge} />}
         </Btn>
         {menuOpen && (
           <div className={s.menu}>
@@ -43,10 +43,11 @@ export function TopBar({
             </button>
             {dictationSupported && (
               <button
-                className={`${s.menuItem}${dictationActive ? ` ${s.menuItemOn}` : ''}`}
-                onClick={() => { onToggleDictation(); setMenuOpen(false); }}
+                className={`${s.menuItem}${dictationMode ? ` ${s.menuItemOn}` : ''}`}
+                onClick={() => { onToggleDictationMode(); setMenuOpen(false); }}
               >
-                {dictationActive ? '🎤 Stop dettatura' : '🎤 Dettatura'}
+                <span className={s.menuItemLabel}>🎤 Modalità dittafono</span>
+                <span className={`${s.switch} ${dictationMode ? s.switchOn : ''}`} />
               </button>
             )}
           </div>

@@ -57,6 +57,9 @@ export default function ScratchyPad() {
   }, [session, leftTaRef, rightTaRef]);
 
   const dictation = useDictation(insertDictation);
+  const [dictationMode, setDictationMode] = useState(false);
+
+  useEffect(() => { if (!dictationMode) dictation.stop(); }, [dictationMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const ai             = useAI(aiConfig);
   const isMobile       = winW < 680;
@@ -308,8 +311,8 @@ export default function ScratchyPad() {
         loading={loading}
         onSave={() => saveTab()}
         onOpenSettings={openSettings}
-        dictationActive={dictation.active}
-        onToggleDictation={dictation.toggle}
+        dictationMode={dictationMode}
+        onToggleDictationMode={() => setDictationMode(m => !m)}
         dictationSupported={dictation.supported}
       />
 
@@ -374,6 +377,10 @@ export default function ScratchyPad() {
         aiConfigured={isAiConfigured(aiConfig)}
         onOpenSettings={openSettings}
         status={status}
+        dictationMode={dictationMode}
+        dictating={dictation.active}
+        onDictStart={dictation.start}
+        onDictStop={dictation.stop}
       />
 
       {panel === 'settings' && (
