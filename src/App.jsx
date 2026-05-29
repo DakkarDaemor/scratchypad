@@ -145,9 +145,11 @@ export default function ScratchyPad() {
   };
 
   const isAiConfigured = cfg => {
-    const { provider, claudeKey, openrouterKey, groqKey } = cfg || {};
+    const { provider, claudeKey, openrouterKey, groqKey, openaiKey, geminiKey } = cfg || {};
     if (provider === 'openrouter') return !!openrouterKey;
-    if (provider === 'groq') return !!groqKey;
+    if (provider === 'groq')       return !!groqKey;
+    if (provider === 'openai')     return !!openaiKey;
+    if (provider === 'gemini')     return !!geminiKey;
     return !!claudeKey;
   };
 
@@ -397,6 +399,7 @@ export default function ScratchyPad() {
             onChange={text => session.updateTab(session.leftTabId, { text, dirty: true })}
             fontSize={fontSize}
             onFontResize={resizeFont}
+            markdownEnabled={!!aiConfig.markdownMode}
           />
           {session.rightTabId && (
             <>
@@ -411,6 +414,7 @@ export default function ScratchyPad() {
                 onChange={text => session.updateTab(session.rightTabId, { text, dirty: true })}
                 fontSize={fontSize}
                 onFontResize={resizeFont}
+                markdownEnabled={!!aiConfig.markdownMode}
               />
             </>
           )}

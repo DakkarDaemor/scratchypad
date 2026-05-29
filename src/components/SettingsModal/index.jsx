@@ -83,6 +83,19 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
           </Field>
         </>)}
 
+        <Field label="Editor">
+          <label className={s.checkRow}>
+            <input
+              type="checkbox"
+              checked={!!config.markdownMode}
+              onChange={e => set('markdownMode', e.target.checked)}
+              style={{ accentColor: '#8b6fcb' }}
+            />
+            <span>Markdown preview</span>
+            <span className={s.providerSub}>mostra pulsante Edit / Preview nell'editor</span>
+          </label>
+        </Field>
+
         <Row style={{ justifyContent: 'space-between' }}>
           <Btn onClick={onLogout} style={{ color: '#c46a6a', borderColor: '#e8c8c8' }}>Logout</Btn>
           <div style={{ display: 'flex', gap: 8 }}>

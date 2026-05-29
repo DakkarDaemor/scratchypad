@@ -38,3 +38,14 @@
   color: #9b85c4;
   text-decoration: underline;
 }
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}

@@ -1,8 +1,14 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { marked } from 'marked';
 import s from './EditorPane.module.css';
 
-export function EditorPane({ tab, focused, taRef, hasSplit, isMobile, onFocus, onChange, fontSize, onFontResize }) {
+marked.use({ breaks: true, gfm: true });
+
+export function EditorPane({ tab, focused, taRef, hasSplit, isMobile, onFocus, onChange, fontSize, onFontResize, markdownEnabled }) {
   const pinchRef = useRef(null);
+  const [mdPreview, setMdPreview] = useState(false);
+
+  useEffect(() => { if (!markdownEnabled) setMdPreview(false); }, [markdownEnabled]);
 
   useEffect(() => {
     const el = taRef.current;
@@ -41,30 +47,49 @@ export function EditorPane({ tab, focused, taRef, hasSplit, isMobile, onFocus, o
 
   if (!tab) return <div className={s.pane} />;
 
+  const padding  = isMobile ? '20px 20px' : (hasSplit ? '28px 28px' : '36px 40px');
+  const maxWidth = hasSplit ? '100%' : 720;
+  const sharedStyle = { padding, maxWidth, margin: hasSplit ? 0 : '0 auto', fontSize };
+
   return (
     <div
       onClick={onFocus}
       className={s.pane}
-      style={focused && hasSplit ? { outline: '1px solid #e0d8f0', outlineOffset: -1 } : undefined}
+      style={{
+        position: 'relative',
+        ...(focused && hasSplit ? { outline: '1px solid #e0d8f0', outlineOffset: -1 } : {}),
+      }}
     >
-      <textarea
-        ref={taRef}
-        value={tab.text}
-        onChange={e => onChange(e.target.value)}
-        onFocus={onFocus}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={() => { pinchRef.current = null; }}
-        placeholder="Start writing…"
-        spellCheck
-        className={s.textarea}
-        style={{
-          padding: isMobile ? '20px 20px' : (hasSplit ? '28px 28px' : '36px 40px'),
-          maxWidth: hasSplit ? '100%' : 720,
-          margin: hasSplit ? 0 : '0 auto',
-          fontSize,
-        }}
-      />
+      {markdownEnabled && (
+        <button
+          className={s.toggleBtn}
+          onClick={e => { e.stopPropagation(); setMdPreview(p => !p); }}
+        >
+          {mdPreview ? '✎ Edit' : '⊞ Preview'}
+        </button>
+      )}
+
+      {markdownEnabled && mdPreview
+        ? <div
+            className={s.preview}
+            style={sharedStyle}
+            dangerouslySetInnerHTML={{ __html: marked.parse(tab.text || '') }}
+            onClick={() => setMdPreview(false)}
+          />
+        : <textarea
+            ref={taRef}
+            value={tab.text}
+            onChange={e => onChange(e.target.value)}
+            onFocus={onFocus}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={() => { pinchRef.current = null; }}
+            placeholder="Start writing…"
+            spellCheck
+            className={s.textarea}
+            style={sharedStyle}
+          />
+      }
     </div>
   );
 }

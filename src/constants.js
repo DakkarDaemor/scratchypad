@@ -7,6 +7,11 @@ export const DEFAULT_AI_CONFIG = {
   openrouterModel: 'google/gemini-2.0-flash-exp:free',
   groqKey:         '',
   groqModel:       'llama-3.3-70b-versatile',
+  openaiKey:       '',
+  openaiModel:     'gpt-4o-mini',
+  geminiKey:       '',
+  geminiModel:     'gemini-2.0-flash',
+  markdownMode:    false,
 };
 
 export const STATUS_COLOR = { ok: '#6aa4bc', err: '#c46a6a', warn: '#9b85c4', info: '#9b85c4' };
