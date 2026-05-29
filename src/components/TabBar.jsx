@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 
+const stripExt = name => name.endsWith('.txt') ? name.slice(0, -4) : name;
+const ensureExt = name => name.includes('.') ? name : name + '.txt';
+
 function TabItem({ tab, isActive, isSecondary, isMobile, onClick, onClose, onRename }) {
   const [hov,      setHov]      = useState(false);
   const [renaming, setRenaming] = useState(false);
@@ -12,13 +15,15 @@ function TabItem({ tab, isActive, isSecondary, isMobile, onClick, onClose, onRen
 
   const startRename = e => {
     e.stopPropagation();
-    setDraft(tab.filename);
+    setDraft(stripExt(tab.filename));
     setRenaming(true);
   };
 
   const commitRename = () => {
-    const name = draft.trim();
-    if (name && name !== tab.filename) onRename(name);
+    const raw = draft.trim();
+    if (!raw) { setRenaming(false); return; }
+    const name = ensureExt(raw);
+    if (name !== tab.filename) onRename(name);
     setRenaming(false);
   };
 
@@ -42,6 +47,12 @@ function TabItem({ tab, isActive, isSecondary, isMobile, onClick, onClose, onRen
         borderBottom: `2px solid ${isActive ? '#9b85c4' : isSecondary ? '#c8c0d8' : 'transparent'}`,
       }}
     >
+      {tab.dirty && !renaming && (
+        <span style={{
+          width: 7, height: 7, borderRadius: '50%',
+          background: 'rgb(184, 130, 229)', flexShrink: 0,
+        }} />
+      )}
       {renaming ? (
         <input
           ref={inputRef}
@@ -63,16 +74,9 @@ function TabItem({ tab, isActive, isSecondary, isMobile, onClick, onClose, onRen
             flex: 1, fontSize: 11, color: isActive ? '#2a2825' : '#9a92a8',
             fontFamily: "'DM Mono', monospace",
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            display: 'flex', alignItems: 'center', gap: 4,
           }}
         >
-          {tab.dirty && (
-            <span style={{
-              width: 7, height: 7, borderRadius: '50%',
-              background: 'rgb(184, 130, 229)', flexShrink: 0, display: 'inline-block',
-            }} />
-          )}
-          {tab.filename}
+          {stripExt(tab.filename)}
         </span>
       )}
       <button

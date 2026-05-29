@@ -7,7 +7,7 @@ export function LoginScreen({ onLogin, loading, status }) {
   return (
     <div style={{
       fontFamily: "'DM Sans', sans-serif",
-      background: '#f7f6f4', height: '100dvh',
+      background: '#f7f6f4', height: 'var(--app-height, 100dvh)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 20,
     }}>

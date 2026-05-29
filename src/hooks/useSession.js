@@ -37,7 +37,9 @@ export function useSession() {
   };
 
   const addNewTab = () => {
-    const t = mkTab();
+    const taken = new Set(tabs.map(t => t.filename));
+    const name = taken.has('scratch.txt') ? nextFilename('scratch.txt', taken) : 'scratch.txt';
+    const t = mkTab(name);
     setTabs(prev => [...prev, t]);
     setFocusedTab(t.id);
   };
