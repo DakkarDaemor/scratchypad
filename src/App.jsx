@@ -1,5 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { FONTS, KEYS, FONT_MIN, FONT_MAX, FONT_DEFAULT, DEFAULT_AI_CONFIG } from './constants';
+
+const readSnippetIndex = () => {
+  try { return JSON.parse(localStorage.getItem(KEYS.SNIPPET_INDEX) || '{}'); } catch { return {}; }
+};
+const writeSnippet = (fileId, text) => {
+  if (!fileId) return;
+  const idx = readSnippetIndex();
+  idx[fileId] = text.replace(/\s+/g, ' ').trim().slice(0, 80);
+  localStorage.setItem(KEYS.SNIPPET_INDEX, JSON.stringify(idx));
+};
 import { mkTab } from './utils';
 import { useGDrive } from './hooks/useGDrive';
 import { useAI } from './hooks/useAI';
@@ -210,6 +220,7 @@ export default function ScratchyPad() {
     setLoading(true); flash('Saving…');
     try {
       const savedId = await drive.saveFile(tab);
+      writeSnippet(savedId, tab.text);
       session.updateTab(tabId, { fileId: savedId, dirty: false });
       flash('Saved ✓', 'ok');
       if (sidebarVisible) refreshDriveFiles();
@@ -221,6 +232,7 @@ export default function ScratchyPad() {
     setLoading(true);
     try {
       const text = await drive.downloadFile(fileId);
+      writeSnippet(fileId, text);
       session.openInTab(name, text, fileId);
       if (!isLarge) setSidebarOpen(false);
       flash('Loaded ✓', 'ok');
@@ -292,8 +304,10 @@ export default function ScratchyPad() {
   const focusedTab   = session.getTab(session.focusedId);
   const focusedText  = focusedTab?.text || '';
   const words        = focusedText.trim() ? focusedText.trim().split(/\s+/).length : 0;
+  const snippetIndex = readSnippetIndex();
   const sidebarProps = {
     files: driveFiles, loading: driveLoad,
+    snippets: snippetIndex,
     openTabFileIds: new Set(session.tabs.map(t => t.fileId).filter(Boolean)),
     onRefresh: refreshDriveFiles, onOpenFile: loadFromDrive,
     onNewTab: handleNewTab,

@@ -18,6 +18,7 @@ export const KEYS = {
   GDRIVE_CONFIG: 'sp_gdrive_config_id',
   SESSION:       'sp_session',
   FONT_SIZE:     'sp_font_size',
+  SNIPPET_INDEX: 'sp_snippet_index',
 };
 
 export const FONT_MIN     = 12;
