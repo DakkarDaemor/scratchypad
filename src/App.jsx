@@ -4,6 +4,7 @@ import { mkTab } from './utils';
 import { useGDrive } from './hooks/useGDrive';
 import { useAI } from './hooks/useAI';
 import { useSession } from './hooks/useSession';
+import { useSwipe } from './hooks/useSwipe';
 import { LoginScreen } from './components/LoginScreen';
 import { TopBar } from './components/TopBar';
 import { TabBar } from './components/TabBar';
@@ -46,6 +47,21 @@ export default function ScratchyPad() {
   const canSplit       = winW >= 900;
   const isLarge        = winW >= 1200;
   const sidebarVisible = isLarge || sidebarOpen;
+
+  /* ── Swipe (mobile tab navigation) ── */
+  const swipeHandlers = useSwipe({
+    enabled: isMobile,
+    onSwipeLeft: () => {
+      const idx = session.tabs.findIndex(t => t.id === session.focusedId);
+      const next = session.tabs[idx + 1];
+      if (next) session.setFocusedTab(next.id);
+    },
+    onSwipeRight: () => {
+      const idx = session.tabs.findIndex(t => t.id === session.focusedId);
+      const prev = session.tabs[idx - 1];
+      if (prev) session.setFocusedTab(prev.id);
+    },
+  });
 
   /* ── Effects ── */
   useEffect(() => {
@@ -300,7 +316,7 @@ export default function ScratchyPad() {
             </div>
         }
 
-        <div className={s.editors}>
+        <div className={s.editors} {...(isMobile ? swipeHandlers : {})}>
           <EditorPane
             tab={session.getTab(session.leftTabId)}
             focused={session.focusedPane === 'left'}
