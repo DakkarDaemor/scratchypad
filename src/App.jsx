@@ -61,6 +61,11 @@ export default function ScratchyPad() {
 
   useEffect(() => { if (!dictationMode) dictation.stop(); }, [dictationMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const handleDictStop = useCallback(() => {
+    dictation.stop();
+    insertDictation('\n');
+  }, [dictation, insertDictation]);
+
   const ai             = useAI(aiConfig);
   const isMobile       = winW < 680;
   const canSplit       = winW >= 900;
@@ -380,7 +385,7 @@ export default function ScratchyPad() {
         dictationMode={dictationMode}
         dictating={dictation.active}
         onDictStart={dictation.start}
-        onDictStop={dictation.stop}
+        onDictStop={handleDictStop}
       />
 
       {panel === 'settings' && (

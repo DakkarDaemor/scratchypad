@@ -46,7 +46,7 @@ export function TopBar({
                 className={`${s.menuItem}${dictationMode ? ` ${s.menuItemOn}` : ''}`}
                 onClick={() => { onToggleDictationMode(); setMenuOpen(false); }}
               >
-                <span className={s.menuItemLabel}>🎤 Modalità dittafono</span>
+                <span className={s.menuItemLabel}>🎤 Dictaphone</span>
                 <span className={`${s.switch} ${dictationMode ? s.switchOn : ''}`} />
               </button>
             )}
