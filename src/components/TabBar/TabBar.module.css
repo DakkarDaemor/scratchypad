@@ -76,6 +76,10 @@
 .tab:hover .closeBtn { opacity: 1; }
 .tab.mobile .closeBtn { opacity: 1; }
 
+/* ── Drag ── */
+.tab.dragging { opacity: 0.35; }
+.tab.dragOver { box-shadow: -2px 0 0 #9b85c4; }
+
 /* ── New tab button ── */
 .newBtn {
   padding: 0 14px;

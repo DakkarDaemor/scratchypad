@@ -78,9 +78,11 @@ export function useSession() {
 
   const getNextFilename = base => nextFilename(base, new Set(tabs.map(t => t.filename)));
 
+  const reorderTabs = newOrder => setTabs(newOrder);
+
   return {
     tabs, leftTabId, rightTabId, focusedPane, focusedId,
     setFocusedPane, setRightTabId,
-    getTab, updateTab, setFocusedTab, openInTab, addNewTab, closeTab, toggleSplit, getNextFilename,
+    getTab, updateTab, setFocusedTab, openInTab, addNewTab, closeTab, toggleSplit, getNextFilename, reorderTabs,
   };
 }

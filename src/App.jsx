@@ -306,6 +306,7 @@ export default function ScratchyPad() {
         onCloseTab={handleCloseTab}
         onNewTab={handleNewTab}
         onRenameTab={handleRenameTab}
+        onReorderTabs={session.reorderTabs}
       />
 
       <div className={s.content}>

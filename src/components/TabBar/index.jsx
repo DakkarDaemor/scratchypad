@@ -4,7 +4,9 @@ import s from './TabBar.module.css';
 const stripExt  = name => name.endsWith('.txt') ? name.slice(0, -4) : name;
 const ensureExt = name => name.includes('.') ? name : name + '.txt';
 
-function TabItem({ tab, isActive, isSecondary, isMobile, onClick, onClose, onRename }) {
+function TabItem({ tab, isActive, isSecondary, isMobile, isDragging, isDragOver,
+                   onClick, onClose, onRename,
+                   onDragStart, onDragOver, onDrop, onDragEnd }) {
   const [renaming, setRenaming] = useState(false);
   const [draft,    setDraft]    = useState('');
   const inputRef = useRef(null);
@@ -26,11 +28,21 @@ function TabItem({ tab, isActive, isSecondary, isMobile, onClick, onClose, onRen
     if (e.key === 'Escape') setRenaming(false);
   };
 
-  const cls = [s.tab, isActive && s.active, isSecondary && s.secondary, isMobile && s.mobile]
+  const cls = [s.tab, isActive && s.active, isSecondary && s.secondary,
+               isMobile && s.mobile, isDragging && s.dragging, isDragOver && s.dragOver]
     .filter(Boolean).join(' ');
 
   return (
-    <div onClick={onClick} className={cls}>
+    <div
+      onClick={onClick}
+      className={cls}
+      data-active={isActive || undefined}
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+    >
       {tab.dirty && !renaming && <span className={s.dirty} />}
       {renaming ? (
         <input
@@ -50,9 +62,35 @@ function TabItem({ tab, isActive, isSecondary, isMobile, onClick, onClose, onRen
   );
 }
 
-export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, isMobile, onSelectTab, onCloseTab, onNewTab, onRenameTab }) {
+export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, isMobile,
+                         onSelectTab, onCloseTab, onNewTab, onRenameTab, onReorderTabs }) {
+  const barRef = useRef(null);
+  const [draggedId,  setDraggedId]  = useState(null);
+  const [dragOverId, setDragOverId] = useState(null);
+
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!bar) return;
+    const el = bar.querySelector('[data-active]');
+    el?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+  }, [focusedId]);
+
+  const startDrag = (e, id) => { e.dataTransfer.effectAllowed = 'move'; setDraggedId(id); };
+  const overDrag  = (e, id) => { e.preventDefault(); if (id !== draggedId) setDragOverId(id); };
+  const endDrag   = ()      => { setDraggedId(null); setDragOverId(null); };
+  const drop      = (e, id) => {
+    e.preventDefault();
+    if (!draggedId || draggedId === id) { endDrag(); return; }
+    const arr  = [...tabs];
+    const from = arr.findIndex(t => t.id === draggedId);
+    const to   = arr.findIndex(t => t.id === id);
+    arr.splice(to, 0, arr.splice(from, 1)[0]);
+    onReorderTabs(arr);
+    endDrag();
+  };
+
   return (
-    <div className={s.tabBar}>
+    <div ref={barRef} className={s.tabBar}>
       {tabs.map(tab => {
         const isActive    = tab.id === focusedId;
         const otherPaneId = focusedPane === 'left' ? rightTabId : leftTabId;
@@ -64,9 +102,15 @@ export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, is
             isActive={isActive}
             isSecondary={isSecondary}
             isMobile={isMobile}
+            isDragging={tab.id === draggedId}
+            isDragOver={tab.id === dragOverId}
             onClick={() => onSelectTab(tab.id)}
             onClose={() => onCloseTab(tab.id)}
             onRename={name => onRenameTab(tab.id, name)}
+            onDragStart={e => startDrag(e, tab.id)}
+            onDragOver={e => overDrag(e, tab.id)}
+            onDrop={e => drop(e, tab.id)}
+            onDragEnd={endDrag}
           />
         );
       })}
