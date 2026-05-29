@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FONTS, KEYS, FONT_MIN, FONT_MAX, FONT_DEFAULT } from './constants';
+import { FONTS, KEYS, FONT_MIN, FONT_MAX, FONT_DEFAULT, DEFAULT_AI_CONFIG } from './constants';
 import { mkTab } from './utils';
 import { useGDrive } from './hooks/useGDrive';
 import { useAI } from './hooks/useAI';
@@ -17,14 +17,14 @@ export default function ScratchyPad() {
   const session = useSession();
   const drive   = useGDrive();
 
-  const [claudeKey,   setClaudeKey]   = useState('');
+  const [aiConfig,    setAiConfig]    = useState({ ...DEFAULT_AI_CONFIG });
+  const [tmpConfig,   setTmpConfig]   = useState({ ...DEFAULT_AI_CONFIG });
   const [isLoggedIn,  setIsLoggedIn]  = useState(false);
   const [panel,       setPanel]       = useState(null);
   const [status,      setStatus]      = useState({ msg: '', type: 'info' });
   const [loading,     setLoading]     = useState(false);
   const [aiResult,    setAiResult]    = useState('');
   const [aiLabel,     setAiLabel]     = useState('');
-  const [tmpClaude,   setTmpClaude]   = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [driveFiles,  setDriveFiles]  = useState([]);
   const [driveLoad,   setDriveLoad]   = useState(false);
@@ -37,7 +37,7 @@ export default function ScratchyPad() {
   const leftTaRef  = useRef(null);
   const rightTaRef = useRef(null);
 
-  const ai       = useAI(claudeKey);
+  const ai       = useAI(aiConfig);
   const isMobile = winW < 680;
   const canSplit  = winW >= 900;
 
@@ -68,8 +68,8 @@ export default function ScratchyPad() {
     const exp = Number(localStorage.getItem('sp_gdrive_expiry') || 0);
     if (tok && Date.now() < exp) {
       drive.loadConfig(tok)
-        .then(key => {
-          setClaudeKey(key); setTmpClaude(key); setIsLoggedIn(true);
+        .then(cfg => {
+          setAiConfig(cfg); setTmpConfig(cfg); setIsLoggedIn(true);
           syncOpenTabs(session.tabs);
         })
         .catch(() => {});
@@ -113,9 +113,9 @@ export default function ScratchyPad() {
     setLoading(true);
     try {
       const tok  = await drive.getToken();
-      const key  = await drive.loadConfig(tok);
+      const cfg  = await drive.loadConfig(tok);
       const tabs = session.tabs;
-      setClaudeKey(key); setTmpClaude(key);
+      setAiConfig(cfg); setTmpConfig(cfg);
       setIsLoggedIn(true);
       syncOpenTabs(tabs);
     } catch (e) { flash(`Login failed: ${e.message}`, 'err'); }
@@ -124,7 +124,7 @@ export default function ScratchyPad() {
 
   const logout = () => {
     drive.logout();
-    setIsLoggedIn(false); setClaudeKey(''); setTmpClaude(''); setPanel(null);
+    setIsLoggedIn(false); setAiConfig({ ...DEFAULT_AI_CONFIG }); setTmpConfig({ ...DEFAULT_AI_CONFIG }); setPanel(null);
   };
 
   /* ── Drive ── */
@@ -198,8 +198,8 @@ export default function ScratchyPad() {
     setLoading(true);
     try {
       const tok = await drive.getToken();
-      await drive.writeConfigFile(tok, tmpClaude);
-      setClaudeKey(tmpClaude); setPanel(null); flash('Settings saved ✓', 'ok');
+      await drive.writeConfigFile(tok, tmpConfig);
+      setAiConfig(tmpConfig); setPanel(null); flash('Settings saved ✓', 'ok');
     } catch (e) { flash(`Save failed: ${e.message}`, 'err'); }
     setLoading(false);
   };
@@ -228,7 +228,7 @@ export default function ScratchyPad() {
         onToggleSplit={session.toggleSplit}
         loading={loading}
         onSave={() => saveTab()}
-        onOpenSettings={() => { setTmpClaude(claudeKey); setPanel('settings'); }}
+        onOpenSettings={() => { setTmpConfig(aiConfig); setPanel('settings'); }}
       />
 
       <TabBar
@@ -312,8 +312,8 @@ export default function ScratchyPad() {
 
       {panel === 'settings' && (
         <SettingsModal
-          apiKey={tmpClaude}
-          onChange={setTmpClaude}
+          config={tmpConfig}
+          onConfigChange={setTmpConfig}
           loading={loading}
           onSave={saveSettings}
           onLogout={logout}

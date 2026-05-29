@@ -1,4 +1,4 @@
-import { GDRIVE_CLIENT_ID, KEYS } from '../constants';
+import { GDRIVE_CLIENT_ID, KEYS, DEFAULT_AI_CONFIG } from '../constants';
 
 export function useGDrive() {
   const getToken = () => new Promise((resolve, reject) => {
@@ -26,8 +26,8 @@ export function useGDrive() {
     [KEYS.GDRIVE_TOKEN, KEYS.GDRIVE_EXPIRY, KEYS.GDRIVE_FOLDER, KEYS.GDRIVE_CONFIG].forEach(k => localStorage.removeItem(k));
   };
 
-  const writeConfigFile = async (tok, key) => {
-    const body     = JSON.stringify({ claudeKey: key });
+  const writeConfigFile = async (tok, config) => {
+    const body     = JSON.stringify(config);
     const cachedId = localStorage.getItem(KEYS.GDRIVE_CONFIG);
     if (cachedId) {
       await fetch(`https://www.googleapis.com/upload/drive/v3/files/${cachedId}?uploadType=media`, {
@@ -46,6 +46,11 @@ export function useGDrive() {
     }
   };
 
+  const parseConfig = raw => {
+    const provider = raw.provider || (raw.claudeKey ? 'claude' : DEFAULT_AI_CONFIG.provider);
+    return { ...DEFAULT_AI_CONFIG, ...raw, provider };
+  };
+
   const loadConfig = async tok => {
     const cachedId = localStorage.getItem(KEYS.GDRIVE_CONFIG);
     if (cachedId) {
@@ -53,8 +58,8 @@ export function useGDrive() {
         headers: { Authorization: `Bearer ${tok}` },
       });
       if (r.ok) {
-        const cfg = await r.json().catch(() => ({}));
-        return cfg.claudeKey || '';
+        const raw = await r.json().catch(() => ({}));
+        return parseConfig(raw);
       }
       localStorage.removeItem(KEYS.GDRIVE_CONFIG);
     }
@@ -62,7 +67,7 @@ export function useGDrive() {
     const sr = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id)`, {
       headers: { Authorization: `Bearer ${tok}` },
     });
-    if (!sr.ok) return '';
+    if (!sr.ok) return { ...DEFAULT_AI_CONFIG };
     const found = await sr.json();
     if (found.files?.length) {
       const id = found.files[0].id;
@@ -70,11 +75,11 @@ export function useGDrive() {
       const r = await fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`, {
         headers: { Authorization: `Bearer ${tok}` },
       });
-      if (r.ok) { const cfg = await r.json().catch(() => ({})); return cfg.claudeKey || ''; }
+      if (r.ok) { const raw = await r.json().catch(() => ({})); return parseConfig(raw); }
     } else {
-      await writeConfigFile(tok, '');
+      await writeConfigFile(tok, { ...DEFAULT_AI_CONFIG });
     }
-    return '';
+    return { ...DEFAULT_AI_CONFIG };
   };
 
   const ensureFolder = async tok => {

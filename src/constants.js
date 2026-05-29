@@ -1,5 +1,14 @@
 export const GDRIVE_CLIENT_ID = '29731384499-qnl2dp9jvihpvlqumprmuccpelp7mf9a.apps.googleusercontent.com';
 
+export const DEFAULT_AI_CONFIG = {
+  provider:        'claude',
+  claudeKey:       '',
+  openrouterKey:   '',
+  openrouterModel: 'google/gemini-2.0-flash-exp:free',
+  groqKey:         '',
+  groqModel:       'llama-3.3-70b-versatile',
+};
+
 export const KEYS = {
   GDRIVE_TOKEN:  'sp_gdrive_token',
   GDRIVE_EXPIRY: 'sp_gdrive_expiry',
