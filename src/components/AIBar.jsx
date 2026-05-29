@@ -1,6 +1,6 @@
 import { AI_ACTIONS } from '../constants';
 
-export function AIBar({ loading, wordCount, charCount, onAction }) {
+export function AIBar({ loading, wordCount, charCount, onAction, aiConfigured, onOpenSettings }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
@@ -11,21 +11,34 @@ export function AIBar({ loading, wordCount, charCount, onAction }) {
         <span style={{ fontSize: 9, color: '#c0b8cc', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           AI
         </span>
-        {AI_ACTIONS.map(a => (
-          <button
-            key={a}
-            disabled={loading}
-            onClick={() => onAction(a)}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#9b85c4'; e.currentTarget.style.color = '#9b85c4'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = '#ddd8e8'; e.currentTarget.style.color = '#8a8098'; }}
-            style={{
-              background: 'transparent', border: '1px solid #ddd8e8',
-              color: '#8a8098', padding: '3px 10px', fontSize: 11,
-              cursor: 'pointer', borderRadius: 3,
-              fontFamily: "'DM Sans', sans-serif", transition: 'border-color 0.15s, color 0.15s',
-            }}
-          >{a}</button>
-        ))}
+        {aiConfigured
+          ? AI_ACTIONS.map(a => (
+              <button
+                key={a}
+                disabled={loading}
+                onClick={() => onAction(a)}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#9b85c4'; e.currentTarget.style.color = '#9b85c4'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#ddd8e8'; e.currentTarget.style.color = '#8a8098'; }}
+                style={{
+                  background: 'transparent', border: '1px solid #ddd8e8',
+                  color: '#8a8098', padding: '3px 10px', fontSize: 11,
+                  cursor: 'pointer', borderRadius: 3,
+                  fontFamily: "'DM Sans', sans-serif", transition: 'border-color 0.15s, color 0.15s',
+                }}
+              >{a}</button>
+            ))
+          : <span style={{ fontSize: 11, color: '#b8b0c8', fontStyle: 'italic' }}>
+              non configurata —{' '}
+              <button
+                onClick={onOpenSettings}
+                style={{
+                  background: 'none', border: 'none', color: '#9b85c4',
+                  cursor: 'pointer', fontSize: 11, padding: 0,
+                  fontFamily: "'DM Sans', sans-serif", textDecoration: 'underline',
+                }}
+              >impostazioni</button>
+            </span>
+        }
       </div>
       <span style={{ fontSize: 10, color: '#c5bfd0' }}>{wordCount} w · {charCount} ch</span>
     </div>

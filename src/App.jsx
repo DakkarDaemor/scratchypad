@@ -12,6 +12,7 @@ import { EditorPane } from './components/EditorPane';
 import { AIBar } from './components/AIBar';
 import { SettingsModal } from './components/SettingsModal';
 import { AIResultModal } from './components/AIResultModal';
+import { Overlay, Modal, Btn, Row } from './components/ui';
 
 export default function ScratchyPad() {
   const session = useSession();
@@ -22,6 +23,7 @@ export default function ScratchyPad() {
   const [isLoggedIn,  setIsLoggedIn]  = useState(false);
   const [panel,       setPanel]       = useState(null);
   const [status,      setStatus]      = useState({ msg: '', type: 'info' });
+  const [errorDialog, setErrorDialog] = useState('');
   const [loading,     setLoading]     = useState(false);
   const [aiResult,    setAiResult]    = useState('');
   const [aiLabel,     setAiLabel]     = useState('');
@@ -82,8 +84,16 @@ export default function ScratchyPad() {
 
   /* ── Helpers ── */
   const flash = (msg, type = 'info') => {
+    if (type === 'err') { setErrorDialog(msg); return; }
     setStatus({ msg, type });
     setTimeout(() => setStatus({ msg: '', type: 'info' }), 3000);
+  };
+
+  const isAiConfigured = cfg => {
+    const { provider, claudeKey, openrouterKey, groqKey } = cfg || {};
+    if (provider === 'openrouter') return !!openrouterKey;
+    if (provider === 'groq') return !!groqKey;
+    return !!claudeKey;
   };
 
   const syncOpenTabs = async tabs => {
@@ -308,6 +318,8 @@ export default function ScratchyPad() {
         wordCount={words}
         charCount={focusedText.length}
         onAction={runAI}
+        aiConfigured={isAiConfigured(aiConfig)}
+        onOpenSettings={() => { setTmpConfig(aiConfig); setPanel('settings'); }}
       />
 
       {panel === 'settings' && (
@@ -329,6 +341,19 @@ export default function ScratchyPad() {
           onNewTab={applyResultNewTab}
           onApply={applyResult}
         />
+      )}
+
+      {errorDialog && (
+        <Overlay onClose={() => setErrorDialog('')} zIndex={300}>
+          <Modal title="Errore">
+            <p style={{ fontSize: 13, color: '#5a5570', lineHeight: 1.6, marginBottom: 20, whiteSpace: 'pre-wrap' }}>
+              {errorDialog}
+            </p>
+            <Row>
+              <Btn accent onClick={() => setErrorDialog('')}>OK</Btn>
+            </Row>
+          </Modal>
+        </Overlay>
       )}
     </div>
   );

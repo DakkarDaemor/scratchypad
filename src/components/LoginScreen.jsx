@@ -1,7 +1,7 @@
 import { FONTS } from '../constants';
 import { Btn } from './ui';
 
-const STATUS_COLOR = { ok: '#7a9f6a', err: '#c46a6a', warn: '#9b85c4', info: '#9b85c4' };
+const STATUS_COLOR = { ok: '#6aa4bc', err: '#c46a6a', warn: '#9b85c4', info: '#9b85c4' };
 
 export function LoginScreen({ onLogin, loading, status }) {
   return (

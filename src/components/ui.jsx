@@ -41,14 +41,14 @@ export function Btn({ children, onClick, disabled, accent, style: extra = {} }) 
   );
 }
 
-export function Overlay({ children, onClose }) {
+export function Overlay({ children, onClose, zIndex = 200 }) {
   return (
     <div
       onClick={e => e.target === e.currentTarget && onClose()}
       style={{
         position: 'absolute', inset: 0,
         background: 'rgba(130,120,150,0.35)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex,
       }}
     >{children}</div>
   );
