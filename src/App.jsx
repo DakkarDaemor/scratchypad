@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { FONTS, KEYS, FONT_MIN, FONT_MAX, FONT_DEFAULT, DEFAULT_AI_CONFIG } from './constants';
 import { mkTab } from './utils';
 import { useGDrive } from './hooks/useGDrive';
 import { useAI } from './hooks/useAI';
 import { useSession } from './hooks/useSession';
 import { useSwipe } from './hooks/useSwipe';
+import { useDictation } from './hooks/useDictation';
 import { LoginScreen } from './components/LoginScreen';
 import { TopBar } from './components/TopBar';
 import { TabBar } from './components/TabBar';
@@ -41,6 +42,21 @@ export default function ScratchyPad() {
 
   const leftTaRef  = useRef(null);
   const rightTaRef = useRef(null);
+
+  const insertDictation = useCallback(transcript => {
+    const pane  = session.focusedPane;
+    const tabId = pane === 'left' ? session.leftTabId : session.rightTabId;
+    const tab   = session.getTab(tabId);
+    const ta    = (pane === 'left' ? leftTaRef : rightTaRef).current;
+    if (!tab) return;
+    const t   = tab.text;
+    const pos = ta ? ta.selectionStart : t.length;
+    const newText = t.substring(0, pos) + transcript + t.substring(pos);
+    session.updateTab(tabId, { text: newText, dirty: true });
+    if (ta) requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = pos + transcript.length; });
+  }, [session, leftTaRef, rightTaRef]);
+
+  const dictation = useDictation(insertDictation);
 
   const ai             = useAI(aiConfig);
   const isMobile       = winW < 680;
@@ -293,6 +309,9 @@ export default function ScratchyPad() {
         loading={loading}
         onSave={() => saveTab()}
         onOpenSettings={openSettings}
+        dictationActive={dictation.active}
+        onToggleDictation={dictation.toggle}
+        dictationSupported={dictation.supported}
       />
 
       <TabBar
