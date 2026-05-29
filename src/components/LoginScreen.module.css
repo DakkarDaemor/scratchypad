@@ -1,0 +1,15 @@
+.screen {
+  font-family: 'DM Sans', sans-serif;
+  background: #f7f6f4;
+  height: var(--app-height, 100dvh);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.logo {
+  width: 200px;
+  height: auto;
+}
+.status { font-size: 11px; }

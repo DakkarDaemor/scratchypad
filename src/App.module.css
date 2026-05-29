@@ -1,0 +1,32 @@
+.app {
+  font-family: 'DM Sans', sans-serif;
+  background: #f7f6f4;
+  color: #2a2825;
+  height: var(--app-height, 100dvh);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+.content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.sidebarWrapper {
+  overflow: hidden;
+  flex-shrink: 0;
+  align-self: stretch;
+  transition: width 0.25s ease;
+}
+.editors {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+.splitDivider {
+  width: 1px;
+  background: #e2dedd;
+  flex-shrink: 0;
+}

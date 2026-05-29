@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import s from './EditorPane.module.css';
 
 export function EditorPane({ tab, focused, taRef, hasSplit, isMobile, onFocus, onChange, fontSize, onFontResize }) {
   const pinchRef = useRef(null);
@@ -6,17 +7,12 @@ export function EditorPane({ tab, focused, taRef, hasSplit, isMobile, onFocus, o
   useEffect(() => {
     const el = taRef.current;
     if (!el) return;
-
     const onWheel = e => {
       if (!e.ctrlKey) return;
       e.preventDefault();
       onFontResize(e.deltaY < 0 ? 1 : -1);
     };
-
-    const onTouchMove = e => {
-      if (e.touches.length === 2) e.preventDefault();
-    };
-
+    const onTouchMove = e => { if (e.touches.length === 2) e.preventDefault(); };
     el.addEventListener('wheel',     onWheel,     { passive: false });
     el.addEventListener('touchmove', onTouchMove, { passive: false });
     return () => {
@@ -43,15 +39,13 @@ export function EditorPane({ tab, focused, taRef, hasSplit, isMobile, onFocus, o
     }
   };
 
-  if (!tab) return <div style={{ flex: 1 }} />;
+  if (!tab) return <div className={s.pane} />;
 
   return (
     <div
       onClick={onFocus}
-      style={{
-        flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        outline: focused && hasSplit ? '1px solid #e0d8f0' : 'none', outlineOffset: -1,
-      }}
+      className={s.pane}
+      style={focused && hasSplit ? { outline: '1px solid #e0d8f0', outlineOffset: -1 } : undefined}
     >
       <textarea
         ref={taRef}
@@ -63,14 +57,12 @@ export function EditorPane({ tab, focused, taRef, hasSplit, isMobile, onFocus, o
         onTouchEnd={() => { pinchRef.current = null; }}
         placeholder="Start writing…"
         spellCheck
+        className={s.textarea}
         style={{
-          flex: 1, background: 'transparent', border: 'none', outline: 'none',
-          resize: 'none', overflowY: 'auto',
           padding: isMobile ? '20px 20px' : (hasSplit ? '28px 28px' : '36px 40px'),
           maxWidth: hasSplit ? '100%' : 720,
-          width: '100%', margin: hasSplit ? 0 : '0 auto',
-          fontSize, lineHeight: 1.8, color: '#2a2825',
-          fontFamily: "'Lora', Georgia, serif",
+          margin: hasSplit ? 0 : '0 auto',
+          fontSize,
         }}
       />
     </div>

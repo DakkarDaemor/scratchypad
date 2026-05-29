@@ -1,0 +1,40 @@
+.providers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.providerRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+}
+.providerRow.selected {
+  background: #f0edf8;
+  border-color: #c4b5e8;
+}
+.providerName {
+  font-weight: 500;
+  font-size: 14px;
+}
+.providerSub {
+  color: #8a8480;
+  font-size: 12px;
+}
+.keyLink {
+  margin-left: auto;
+  font-size: 11px;
+  color: #9b85c4;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.keyLink:hover { text-decoration: underline; }
+
+.hintLink {
+  color: #9b85c4;
+  text-decoration: underline;
+}

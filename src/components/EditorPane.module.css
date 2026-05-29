@@ -1,0 +1,19 @@
+.pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+  width: 100%;
+  line-height: 1.8;
+  color: #2a2825;
+  font-family: 'Lora', Georgia, serif;
+}

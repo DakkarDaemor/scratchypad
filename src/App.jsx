@@ -13,6 +13,7 @@ import { AIBar } from './components/AIBar';
 import { SettingsModal } from './components/SettingsModal';
 import { AIResultModal } from './components/AIResultModal';
 import { Overlay, Modal, Btn, Row } from './components/ui';
+import s from './App.module.css';
 
 export default function ScratchyPad() {
   const session = useSession();
@@ -224,11 +225,7 @@ export default function ScratchyPad() {
   }
 
   return (
-    <div style={{
-      fontFamily: "'DM Sans', sans-serif", background: '#f7f6f4', color: '#2a2825',
-      height: 'var(--app-height, 100dvh)', display: 'flex', flexDirection: 'column',
-      overflow: 'hidden', position: 'relative',
-    }}>
+    <div className={s.app}>
       <TopBar
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(o => !o)}
@@ -254,7 +251,7 @@ export default function ScratchyPad() {
         onRenameTab={(id, name) => session.updateTab(id, { filename: name })}
       />
 
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
+      <div className={s.content}>
         {isMobile
           ? <Sidebar
               open={sidebarOpen}
@@ -267,7 +264,7 @@ export default function ScratchyPad() {
               onOpenFile={loadFromDrive}
               onNewTab={session.addNewTab}
             />
-          : <div style={{ width: sidebarOpen ? 220 : 0, overflow: 'hidden', flexShrink: 0, transition: 'width 0.25s ease', alignSelf: 'stretch' }}>
+          : <div className={s.sidebarWrapper} style={{ width: sidebarOpen ? 220 : 0 }}>
               <Sidebar
                 open={sidebarOpen}
                 isMobile={false}
@@ -282,7 +279,7 @@ export default function ScratchyPad() {
             </div>
         }
 
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div className={s.editors}>
           <EditorPane
             tab={session.getTab(session.leftTabId)}
             focused={session.focusedPane === 'left'}
@@ -296,7 +293,7 @@ export default function ScratchyPad() {
           />
           {session.rightTabId && (
             <>
-              <div style={{ width: 1, background: '#e2dedd', flexShrink: 0 }} />
+              <div className={s.splitDivider} />
               <EditorPane
                 tab={session.getTab(session.rightTabId)}
                 focused={session.focusedPane === 'right'}

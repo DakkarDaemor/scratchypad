@@ -1,0 +1,90 @@
+.tabBar {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid #e2dedd;
+  background: #f7f6f4;
+  flex-shrink: 0;
+  overflow-x: auto;
+  min-height: 33px;
+}
+
+/* ── Tab item ── */
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px 0 12px;
+  border-right: 1px solid #e2dedd;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  min-width: 80px;
+  max-width: 180px;
+  background: transparent;
+}
+.tab:hover { background: #f3f0f8; }
+.tab.active {
+  background: #fff;
+  border-bottom-color: #9b85c4;
+}
+.tab.secondary { border-bottom-color: #c8c0d8; }
+
+.dirty {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgb(184, 130, 229);
+  flex-shrink: 0;
+}
+
+.name {
+  flex: 1;
+  font-size: 11px;
+  color: #9a92a8;
+  font-family: 'DM Mono', monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tab.active .name { color: #2a2825; }
+
+.renameInput {
+  flex: 1;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  background: #f0edf8;
+  border: 1px solid #c8c0d8;
+  border-radius: 2px;
+  color: #2a2825;
+  padding: 1px 4px;
+  outline: none;
+  min-width: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #c0b8cc;
+  font-size: 14px;
+  padding: 0 2px;
+  opacity: 0;
+  transition: opacity 0.1s;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.tab:hover .closeBtn { opacity: 1; }
+.tab.mobile .closeBtn { opacity: 1; }
+
+/* ── New tab button ── */
+.newBtn {
+  padding: 0 14px;
+  background: none;
+  border: none;
+  border-left: 1px solid #e5e0de;
+  cursor: pointer;
+  color: #c0b8cc;
+  font-size: 18px;
+  flex-shrink: 0;
+  line-height: 1;
+}

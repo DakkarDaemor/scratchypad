@@ -9,6 +9,8 @@ export const DEFAULT_AI_CONFIG = {
   groqModel:       'llama-3.3-70b-versatile',
 };
 
+export const STATUS_COLOR = { ok: '#6aa4bc', err: '#c46a6a', warn: '#9b85c4', info: '#9b85c4' };
+
 export const KEYS = {
   GDRIVE_TOKEN:  'sp_gdrive_token',
   GDRIVE_EXPIRY: 'sp_gdrive_expiry',

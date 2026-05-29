@@ -1,23 +1,17 @@
-import { FONTS } from '../constants';
+import { FONTS, STATUS_COLOR } from '../constants';
 import { Btn } from './ui';
-
-const STATUS_COLOR = { ok: '#6aa4bc', err: '#c46a6a', warn: '#9b85c4', info: '#9b85c4' };
+import s from './LoginScreen.module.css';
 
 export function LoginScreen({ onLogin, loading, status }) {
   return (
-    <div style={{
-      fontFamily: "'DM Sans', sans-serif",
-      background: '#f7f6f4', height: 'var(--app-height, 100dvh)',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', gap: 20,
-    }}>
+    <div className={s.screen}>
       <style>{FONTS}</style>
-      <img src={`${import.meta.env.BASE_URL}logo.png`} alt="ScratchyPad" style={{ width: 200, height: 'auto' }} />
+      <img src={`${import.meta.env.BASE_URL}logo.png`} alt="ScratchyPad" className={s.logo} />
       <Btn accent onClick={onLogin} disabled={loading} style={{ padding: '8px 24px', fontSize: 13 }}>
         {loading ? '…' : 'Login with Google'}
       </Btn>
       {status.msg && (
-        <span style={{ fontSize: 11, color: STATUS_COLOR[status.type] }}>{status.msg}</span>
+        <span className={s.status} style={{ color: STATUS_COLOR[status.type] }}>{status.msg}</span>
       )}
     </div>
   );

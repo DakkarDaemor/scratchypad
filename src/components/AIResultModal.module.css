@@ -1,0 +1,14 @@
+.result {
+  background: #f0edf8;
+  border: 1px solid #dbd5e8;
+  border-radius: 4px;
+  padding: 16px 18px;
+  font-size: 14px;
+  line-height: 1.75;
+  color: #363240;
+  font-family: 'Lora', Georgia, serif;
+  white-space: pre-wrap;
+  overflow-y: auto;
+  max-height: 52vh;
+  margin-bottom: 16px;
+}
