@@ -6,30 +6,8 @@ const stripExt  = name => name.endsWith('.txt') ? name.slice(0, -4) : name;
 const ensureExt = name => name.includes('.') ? name : name + '.txt';
 
 function TabItem({ tab, isActive, isSecondary, isMobile, isDragging, isDragOver,
-                   onClick, onClose, onRename,
-                   onDragStart, onDragOver, onDrop, onDragEnd,
-                   onContextMenu, onTouchStart, onTouchEnd, onTouchMove }) {
-  const [renaming, setRenaming] = useState(false);
-  const [draft,    setDraft]    = useState('');
-  const inputRef = useRef(null);
-
-  useEffect(() => { if (renaming) inputRef.current?.select(); }, [renaming]);
-
-  const startRename = e => { e.stopPropagation(); setDraft(stripExt(tab.filename)); setRenaming(true); };
-
-  const commitRename = () => {
-    const raw = draft.trim();
-    if (!raw) { setRenaming(false); return; }
-    const name = ensureExt(raw);
-    if (name !== tab.filename) onRename(name);
-    setRenaming(false);
-  };
-
-  const onKeyDown = e => {
-    if (e.key === 'Enter')  commitRename();
-    if (e.key === 'Escape') setRenaming(false);
-  };
-
+                   onClick, onClose,
+                   onDragStart, onDragOver, onDrop, onDragEnd }) {
   const cls = [s.tab, isActive && s.active, isSecondary && s.secondary,
                isMobile && s.mobile, isDragging && s.dragging, isDragOver && s.dragOver]
     .filter(Boolean).join(' ');
@@ -43,7 +21,7 @@ function TabItem({ tab, isActive, isSecondary, isMobile, isDragging, isDragOver,
 
   return (
     <div
-      onClick={onClick}
+      onClick={e => onClick(e.currentTarget)}
       className={cls}
       style={colorStyle}
       data-active={isActive || undefined}
@@ -52,25 +30,9 @@ function TabItem({ tab, isActive, isSecondary, isMobile, isDragging, isDragOver,
       onDragOver={onDragOver}
       onDrop={onDrop}
       onDragEnd={onDragEnd}
-      onContextMenu={onContextMenu}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
-      onTouchMove={onTouchMove}
     >
-      {tab.dirty && !renaming && <span className={s.dirty} />}
-      {renaming ? (
-        <input
-          ref={inputRef}
-          value={draft}
-          onChange={e => setDraft(e.target.value)}
-          onBlur={commitRename}
-          onKeyDown={onKeyDown}
-          onClick={e => e.stopPropagation()}
-          className={s.renameInput}
-        />
-      ) : (
-        <span className={s.name} onDoubleClick={startRename}>{stripExt(tab.filename)}</span>
-      )}
+      {tab.dirty && <span className={s.dirty} />}
+      <span className={s.name}>{stripExt(tab.filename)}</span>
       <button onClick={e => { e.stopPropagation(); onClose(); }} className={s.closeBtn}>×</button>
     </div>
   );
@@ -78,9 +40,9 @@ function TabItem({ tab, isActive, isSecondary, isMobile, isDragging, isDragOver,
 
 export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, isMobile,
                          onSelectTab, onCloseTab, onNewTab, onRenameTab, onReorderTabs, onColorTab }) {
-  const barRef       = useRef(null);
-  const popoverRef   = useRef(null);
-  const longPressRef = useRef(null);
+  const barRef      = useRef(null);
+  const popoverRef  = useRef(null);
+  const lastTapRef  = useRef({ tabId: null, time: 0 });
   const [draggedId,  setDraggedId]  = useState(null);
   const [dragOverId, setDragOverId] = useState(null);
   const [popover,    setPopover]    = useState(null); // { tabId, x, y, draftName, color }
@@ -105,24 +67,28 @@ export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, is
     setPopover({ tabId: tab.id, x, y: rect.bottom + 4, draftName: stripExt(tab.filename), color: tab.color || null });
   };
 
-  const commitPopoverRename = (p) => {
-    const raw = (p || popover)?.draftName?.trim();
+  const commitPopoverRename = () => {
+    if (!popover) return;
+    const raw = popover.draftName.trim();
     if (!raw) return;
     const name = ensureExt(raw);
-    const tabId = (p || popover)?.tabId;
-    const tab = tabs.find(t => t.id === tabId);
-    if (tab && name !== tab.filename) onRenameTab(tabId, name);
+    const tab = tabs.find(t => t.id === popover.tabId);
+    if (tab && name !== tab.filename) onRenameTab(popover.tabId, name);
   };
 
-  const startLongPress = (e, tab, el) => {
-    longPressRef.current = setTimeout(() => {
+  const handleTabClick = (tab, el) => {
+    const now  = Date.now();
+    const last = lastTapRef.current;
+    if (last.tabId === tab.id && now - last.time < 350) {
       openPopover(tab, el.getBoundingClientRect());
-    }, 500);
+      lastTapRef.current = { tabId: null, time: 0 };
+    } else {
+      onSelectTab(tab.id);
+      lastTapRef.current = { tabId: tab.id, time: now };
+    }
   };
 
-  const cancelLongPress = () => { clearTimeout(longPressRef.current); longPressRef.current = null; };
-
-  const startDrag = (e, id) => { cancelLongPress(); e.dataTransfer.effectAllowed = 'move'; setDraggedId(id); };
+  const startDrag = (e, id) => { e.dataTransfer.effectAllowed = 'move'; setDraggedId(id); };
   const overDrag  = (e, id) => { e.preventDefault(); if (id !== draggedId) setDragOverId(id); };
   const endDrag   = () => { setDraggedId(null); setDragOverId(null); };
   const drop      = (e, id) => {
@@ -151,17 +117,12 @@ export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, is
             isMobile={isMobile}
             isDragging={tab.id === draggedId}
             isDragOver={tab.id === dragOverId}
-            onClick={() => onSelectTab(tab.id)}
+            onClick={(el) => handleTabClick(tab, el)}
             onClose={() => onCloseTab(tab.id)}
-            onRename={name => onRenameTab(tab.id, name)}
             onDragStart={e => startDrag(e, tab.id)}
             onDragOver={e => overDrag(e, tab.id)}
             onDrop={e => drop(e, tab.id)}
             onDragEnd={endDrag}
-            onContextMenu={e => { e.preventDefault(); openPopover(tab, e.currentTarget.getBoundingClientRect()); }}
-            onTouchStart={e => startLongPress(e, tab, e.currentTarget)}
-            onTouchEnd={cancelLongPress}
-            onTouchMove={cancelLongPress}
           />
         );
       })}
