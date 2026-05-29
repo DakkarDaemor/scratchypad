@@ -1,33 +1,41 @@
 # ScratchyPad
 
-A minimal online scratch editor — extended clipboard, text drafting, and AI-assisted writing.  
-Your data lives in **your** Dropbox. No backend, no tracking.
+A minimal online scratch editor — multi-tab text drafting with AI writing assistance.  
+Your data lives in **your** Google Drive. No backend, no tracking.
 
 ## Features
 
-- ✍️ Distraction-free editor with auto-save (localStorage draft)
-- ☁️ Save/load notes to your **own Dropbox** folder (`/scratchypad/`)
-- 🤖 AI actions via Claude API: Summarize, Improve, Fix grammar, Shorten, IT ↔ EN
-- 🔐 All credentials stored locally in the browser — nothing sent to any third-party server
-- 📱 Responsive, works on any device
+- **Multi-tab editor** with drag-to-reorder, per-tab colors, and split-pane view (desktop)
+- **Google Drive sync** — files saved to a `/scratchypad/` folder in your own Drive
+- **AI writing actions** on selection or full text: Summarize, Improve, Fix grammar, Shorten, Expand, Bullet points, Tone, IT ↔ EN
+- **Multiple AI providers** — Claude, ChatGPT, Gemini, OpenRouter, Groq (configurable in Settings)
+- **Markdown preview** — toggleable per pane with an Edit / Preview button
+- **Dictation** — speech-to-text input via Web Speech API
+- **Font resize** — Ctrl+scroll or pinch on mobile
+- **Auto-save** — draft persisted to localStorage on every keystroke
+- **Sidebar** — file list from Drive with backup/restore support
+- **Word and character count** always visible
 
 ## Setup
 
-### 1. Dropbox token
+### 1. Login with Google
 
-1. Go to [dropbox.com/developers/apps](https://www.dropbox.com/developers/apps)
-2. Create a new app → **Scoped access** → **Full Dropbox**
-3. Under **Permissions**, enable: `files.content.write`, `files.content.read`
-4. Under **Settings** → **OAuth 2** → click **Generate** to get an access token
-5. Paste the token in ScratchyPad → ⚙ Settings
+Click **Login with Google** — the app uses OAuth2 (no password, no token to copy).  
+It only requests access to files it creates (`drive.file` scope), so it cannot see the rest of your Drive.
 
-### 2. Claude API key
+### 2. AI provider
 
-1. Go to [console.anthropic.com](https://console.anthropic.com)
-2. Create an API key
-3. Paste it in ScratchyPad → ⚙ Settings
+Open **⚙ Settings** and choose a provider:
 
-> Both values are stored in `localStorage` — they never leave your browser.
+| Provider | Key format | Free tier |
+|---|---|---|
+| Claude (Anthropic) | `sk-ant-…` | No |
+| ChatGPT (OpenAI) | `sk-…` | No |
+| Gemini (Google) | `AIza…` | Yes |
+| OpenRouter | `sk-or-…` | Yes (`:free` models) |
+| Groq | `gsk_…` | Yes |
+
+API keys are saved to `scratchypad_config.json` in your Google Drive — available across all your devices, never stored on any third-party server.
 
 ## Run locally
 
@@ -44,14 +52,14 @@ The repo includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) tha
 2. Go to **Settings → Pages → Source** → select **GitHub Actions**
 3. Push to `main` — the site will be live at `https://<your-username>.github.io/scratchypad/`
 
-> If you use a custom domain or deploy to Netlify/Vercel, change `base` in `vite.config.js` to `'/'`.
+> If you deploy to a custom domain or Netlify/Vercel, set `base: '/'` in `vite.config.js`.
 
 ## Tech stack
 
 - [React 18](https://react.dev/) + [Vite](https://vitejs.dev/)
-- [Dropbox API v2](https://www.dropbox.com/developers/documentation/http/documentation)
-- [Anthropic Claude API](https://docs.anthropic.com)
-- Zero dependencies beyond React itself
+- [Google Drive REST API v3](https://developers.google.com/drive/api/v3/reference) + Google Identity Services (OAuth2)
+- AI: Anthropic Claude, OpenAI, Google Gemini, OpenRouter, Groq
+- [marked](https://marked.js.org/) for Markdown rendering
 
 ## License
 
