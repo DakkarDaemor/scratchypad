@@ -203,6 +203,7 @@ export default function ScratchyPad() {
   const driveNames = () => new Set(driveFiles.map(f => f.name));
   const handleNewTab   = () => { session.addNewTab(driveNames()); if (!isLarge) setSidebarOpen(false); };
   const handleCloseTab = id => session.closeTab(id, driveNames());
+  const handleColorTab = (tabId, color) => session.updateTab(tabId, { color });
   const handleRenameTab = (id, name) => {
     const tab = session.getTab(id);
     if (session.tabs.some(t => t.id !== id && t.filename === name)) {
@@ -305,9 +306,13 @@ export default function ScratchyPad() {
   const focusedText  = focusedTab?.text || '';
   const words        = focusedText.trim() ? focusedText.trim().split(/\s+/).length : 0;
   const snippetIndex = readSnippetIndex();
+  const tabColorsByFileId = Object.fromEntries(
+    session.tabs.filter(t => t.fileId && t.color).map(t => [t.fileId, t.color])
+  );
   const sidebarProps = {
     files: driveFiles, loading: driveLoad,
     snippets: snippetIndex,
+    fileColors: tabColorsByFileId,
     openTabFileIds: new Set(session.tabs.map(t => t.fileId).filter(Boolean)),
     onRefresh: refreshDriveFiles, onOpenFile: loadFromDrive,
     onNewTab: handleNewTab,
@@ -347,6 +352,7 @@ export default function ScratchyPad() {
         onNewTab={handleNewTab}
         onRenameTab={handleRenameTab}
         onReorderTabs={session.reorderTabs}
+        onColorTab={handleColorTab}
       />
 
       <div className={s.content}>

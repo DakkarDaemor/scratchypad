@@ -92,3 +92,63 @@
   flex-shrink: 0;
   line-height: 1;
 }
+
+/* ── Color popover ── */
+.popover {
+  position: fixed;
+  z-index: 400;
+  background: #fff;
+  border: 1px solid #e2dedd;
+  border-radius: 7px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 200px;
+}
+
+.popoverInput {
+  width: 100%;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  background: #f0edf8;
+  border: 1px solid #c8c0d8;
+  border-radius: 4px;
+  color: #2a2825;
+  padding: 5px 8px;
+  outline: none;
+}
+.popoverInput:focus { border-color: #9b85c4; }
+
+.swatches {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: transform 0.1s, border-color 0.1s;
+}
+.swatch:hover { transform: scale(1.2); }
+.swatchSelected { border-color: #2a2825 !important; }
+
+.swatchNone {
+  background: #f0edf8;
+  border-color: #c8c0d8;
+  position: relative;
+}
+.swatchNone::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: linear-gradient(135deg, transparent 45%, #e07a7a 45%, #e07a7a 55%, transparent 55%);
+  border-radius: 50%;
+}

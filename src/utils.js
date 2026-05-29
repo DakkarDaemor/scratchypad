@@ -6,6 +6,7 @@ export const mkTab = (filename = 'scratch.txt', text = '', fileId = null) => ({
   text,
   fileId,
   dirty: false,
+  color: null,
 });
 
 export const initSession = (() => {

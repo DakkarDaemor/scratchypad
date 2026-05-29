@@ -36,6 +36,11 @@ export const FONTS = `
   input::placeholder { color: #aaa8b8; }
 `;
 
+export const TAB_COLORS = [
+  '#e07a7a', '#d4956a', '#c4a83a', '#6aab7a',
+  '#5aabab', '#6a95cc', '#9a78c8', '#c86a9a',
+];
+
 export const AI_ACTIONS = ['Summarize', 'Improve', 'Fix grammar', 'Shorten', 'Expand', 'Bullet points', 'Tone', 'IT ↔ EN'];
 
 export const AI_PROMPTS = {

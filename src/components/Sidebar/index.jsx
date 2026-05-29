@@ -8,10 +8,14 @@ const stripLabel = name => {
   return n;
 };
 
-function SidebarFile({ label, open, isBak, snippet, onClick, onDelete }) {
+function SidebarFile({ label, open, isBak, snippet, color, onClick, onDelete }) {
   const cls = [s.file, open && s.open, isBak && s.bak].filter(Boolean).join(' ');
+  const colorStyle = color ? {
+    borderLeft: `3px solid ${color}`,
+    background: `linear-gradient(to right, ${color}25 0%, transparent 65%)`,
+  } : {};
   return (
-    <div className={cls}>
+    <div className={cls} style={colorStyle}>
       <span className={s.filename} onClick={onClick}>{isBak ? `↩ ${label}` : label}</span>
       {snippet && <span className={s.snippet}>{snippet}</span>}
       <button className={s.deleteBtn} onClick={e => { e.stopPropagation(); onDelete(); }}>×</button>
@@ -19,7 +23,7 @@ function SidebarFile({ label, open, isBak, snippet, onClick, onDelete }) {
   );
 }
 
-export function Sidebar({ open = true, isMobile, files, snippets = {}, loading, openTabFileIds, onClose, onRefresh, onOpenFile, onNewTab, onDeleteFile }) {
+export function Sidebar({ open = true, isMobile, files, snippets = {}, fileColors = {}, loading, openTabFileIds, onClose, onRefresh, onOpenFile, onNewTab, onDeleteFile }) {
   const cls = [s.sidebar, isMobile && s.mobile, isMobile && open && s.open].filter(Boolean).join(' ');
 
   const regularFiles = files.filter(f => !f.name.endsWith('.bak'));
@@ -45,6 +49,7 @@ export function Sidebar({ open = true, isMobile, files, snippets = {}, loading, 
                     label={stripLabel(f.name)}
                     open={openTabFileIds.has(f.id)}
                     snippet={snippets[f.id] || ''}
+                    color={fileColors[f.id] || null}
                     onClick={() => onOpenFile(f.id, f.name)}
                     onDelete={() => onDeleteFile(f.id, f.name)}
                   />
