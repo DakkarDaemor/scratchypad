@@ -201,7 +201,7 @@ export default function ScratchyPad() {
   };
 
   const driveNames = () => new Set(driveFiles.map(f => f.name));
-  const handleNewTab   = () => session.addNewTab(driveNames());
+  const handleNewTab   = () => { session.addNewTab(driveNames()); if (!isLarge) setSidebarOpen(false); };
   const handleCloseTab = id => session.closeTab(id, driveNames());
   const handleRenameTab = (id, name) => {
     const tab = session.getTab(id);

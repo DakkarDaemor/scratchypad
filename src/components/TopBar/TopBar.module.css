@@ -6,6 +6,8 @@
   border-bottom: 1px solid #e2dedd;
   background: #f1f0ee;
   flex-shrink: 0;
+  position: relative;
+  z-index: 200;
 }
 .hamburger { font-size: 17px; }
 
