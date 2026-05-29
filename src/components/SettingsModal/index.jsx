@@ -3,6 +3,8 @@ import s from './SettingsModal.module.css';
 
 const PROVIDERS = [
   { id: 'claude',     label: 'Claude',      sub: 'Anthropic',                  keyUrl: 'https://console.anthropic.com/settings/keys' },
+  { id: 'openai',     label: 'ChatGPT',     sub: 'OpenAI',                     keyUrl: 'https://platform.openai.com/api-keys' },
+  { id: 'gemini',     label: 'Gemini',      sub: 'Google',                     keyUrl: 'https://aistudio.google.com/app/apikey' },
   { id: 'openrouter', label: 'OpenRouter',  sub: 'multi-model · free tier',    keyUrl: 'https://openrouter.ai/settings/keys' },
   { id: 'groq',       label: 'Groq',        sub: 'fast inference · free tier', keyUrl: 'https://console.groq.com/keys' },
 ];
@@ -44,6 +46,24 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
             <Inp type="password" value={config.claudeKey} onChange={e => set('claudeKey', e.target.value)} placeholder="sk-ant-…" />
           </Field>
         )}
+
+        {config.provider === 'openai' && (<>
+          <Field label="OpenAI API Key" hint={<><A href="https://platform.openai.com/api-keys">platform.openai.com ↗</A> · saved to your Google Drive</>}>
+            <Inp type="password" value={config.openaiKey} onChange={e => set('openaiKey', e.target.value)} placeholder="sk-…" />
+          </Field>
+          <Field label="Model" hint={<><A href="https://platform.openai.com/docs/models">available models ↗</A></>}>
+            <Inp value={config.openaiModel} onChange={e => set('openaiModel', e.target.value)} placeholder="gpt-4o-mini" />
+          </Field>
+        </>)}
+
+        {config.provider === 'gemini' && (<>
+          <Field label="Gemini API Key" hint={<><A href="https://aistudio.google.com/app/apikey">aistudio.google.com ↗</A> · saved to your Google Drive</>}>
+            <Inp type="password" value={config.geminiKey} onChange={e => set('geminiKey', e.target.value)} placeholder="AIza…" />
+          </Field>
+          <Field label="Model" hint={<><A href="https://ai.google.dev/gemini-api/docs/models">available models ↗</A></>}>
+            <Inp value={config.geminiModel} onChange={e => set('geminiModel', e.target.value)} placeholder="gemini-2.0-flash" />
+          </Field>
+        </>)}
 
         {config.provider === 'openrouter' && (<>
           <Field label="OpenRouter API Key" hint={<><A href="https://openrouter.ai/settings/keys">openrouter.ai ↗</A> · saved to your Google Drive</>}>
