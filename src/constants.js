@@ -38,7 +38,7 @@ export const FONTS = `
 export const AI_ACTIONS = ['Summarize', 'Improve', 'Fix grammar', 'Shorten', 'Expand', 'Bullet points', 'Tone', 'IT ↔ EN'];
 
 export const AI_PROMPTS = {
-  'Summarize':     c => `Summarize this text concisely. Reply only with the summary.\n\n${c}`,
+  'Summarize':     c => `Summarize this text concisely. Use the same language as the text. Reply only with the summary.\n\n${c}`,
   'Improve':       c => `Improve clarity and style. Keep the same language. Reply only with the improved text.\n\n${c}`,
   'Fix grammar':   c => `Fix grammar and typos. Keep style and language. Reply only with the corrected text.\n\n${c}`,
   'Shorten':       c => `Make this shorter while keeping key points. Same language. Reply only with the result.\n\n${c}`,
