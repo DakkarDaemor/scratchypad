@@ -38,6 +38,7 @@ export default function ScratchyPad() {
   const [status,         setStatus]         = useState({ msg: '', type: 'info' });
   const [errorDialog,    setErrorDialog]    = useState('');
   const [deleteConfirm,  setDeleteConfirm]  = useState(null); // { fileId, name }
+  const [restoreConfirm, setRestoreConfirm] = useState(null); // { bakFileId, bakName, originalName }
   const [loading,        setLoading]        = useState(false);
   const [aiResult,       setAiResult]       = useState('');
   const [aiLabel,        setAiLabel]        = useState('');
@@ -256,6 +257,27 @@ export default function ScratchyPad() {
     setLoading(false);
   };
 
+  const handleRestoreBackup = (bakFileId, bakName) => {
+    const originalName = bakName.endsWith('.bak') ? bakName.slice(0, -4) : bakName;
+    setRestoreConfirm({ bakFileId, bakName, originalName });
+  };
+
+  const confirmRestore = async () => {
+    if (!restoreConfirm) return;
+    setLoading(true);
+    try {
+      const text = await drive.downloadFile(restoreConfirm.bakFileId);
+      await drive.saveFile({ filename: restoreConfirm.originalName, text, fileId: null });
+      session.tabs
+        .filter(t => t.filename === restoreConfirm.originalName)
+        .forEach(t => session.updateTab(t.id, { text, dirty: false }));
+      flash('Backup ripristinato ✓', 'ok');
+      setRestoreConfirm(null);
+      refreshDriveFiles();
+    } catch (e) { flash(`Restore failed: ${e.message}`, 'err'); setRestoreConfirm(null); }
+    setLoading(false);
+  };
+
   /* ── AI ── */
   const runAI = async action => {
     const content = getSelected();
@@ -315,6 +337,7 @@ export default function ScratchyPad() {
     fileColors: tabColorsByFileId,
     openTabFileIds: new Set(session.tabs.map(t => t.fileId).filter(Boolean)),
     onRefresh: refreshDriveFiles, onOpenFile: loadFromDrive,
+    onRestoreBackup: handleRestoreBackup,
     onNewTab: handleNewTab,
     onDeleteFile: (fileId, name) => setDeleteConfirm({ fileId, name }),
   };
@@ -440,6 +463,24 @@ export default function ScratchyPad() {
               <Btn onClick={handleDeleteFile} disabled={loading}
                 style={{ background: '#c46a6a', borderColor: '#c46a6a', color: '#fff' }}>
                 {loading ? '…' : 'Delete'}
+              </Btn>
+            </Row>
+          </Modal>
+        </Overlay>
+      )}
+
+      {restoreConfirm && (
+        <Overlay onClose={() => setRestoreConfirm(null)} zIndex={300}>
+          <Modal title="Ripristina backup">
+            <p style={{ fontSize: 13, color: '#5a5570', lineHeight: 1.6, marginBottom: 20 }}>
+              Ripristinare <strong>{restoreConfirm.bakName}</strong> su <strong>{restoreConfirm.originalName}</strong>?<br />
+              Il contenuto attuale del file verrà sovrascritto.
+            </p>
+            <Row>
+              <Btn onClick={() => setRestoreConfirm(null)}>Annulla</Btn>
+              <Btn onClick={confirmRestore} disabled={loading}
+                style={{ background: '#7b6bb0', borderColor: '#7b6bb0', color: '#fff' }}>
+                {loading ? '…' : 'Ripristina'}
               </Btn>
             </Row>
           </Modal>

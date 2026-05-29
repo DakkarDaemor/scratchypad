@@ -23,7 +23,7 @@ function SidebarFile({ label, open, isBak, snippet, color, onClick, onDelete }) 
   );
 }
 
-export function Sidebar({ open = true, isMobile, files, snippets = {}, fileColors = {}, loading, openTabFileIds, onClose, onRefresh, onOpenFile, onNewTab, onDeleteFile }) {
+export function Sidebar({ open = true, isMobile, files, snippets = {}, fileColors = {}, loading, openTabFileIds, onClose, onRefresh, onOpenFile, onRestoreBackup, onNewTab, onDeleteFile }) {
   const cls = [s.sidebar, isMobile && s.mobile, isMobile && open && s.open].filter(Boolean).join(' ');
 
   const regularFiles = files.filter(f => !f.name.endsWith('.bak'));
@@ -63,7 +63,7 @@ export function Sidebar({ open = true, isMobile, files, snippets = {}, fileColor
                         label={stripLabel(f.name)}
                         isBak
                         open={false}
-                        onClick={() => onOpenFile(f.id, f.name)}
+                        onClick={() => onRestoreBackup(f.id, f.name)}
                         onDelete={() => onDeleteFile(f.id, f.name)}
                       />
                     ))}
