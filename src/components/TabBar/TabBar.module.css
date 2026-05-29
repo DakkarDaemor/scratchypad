@@ -39,7 +39,7 @@
 
 .name {
   flex: 1;
-  font-size: 11px;
+  font-size: 13px;
   color: #9a92a8;
   font-family: 'DM Mono', monospace;
   overflow: hidden;
@@ -50,7 +50,7 @@
 
 .renameInput {
   flex: 1;
-  font-size: 11px;
+  font-size: 13px;
   font-family: 'DM Mono', monospace;
   background: #f0edf8;
   border: 1px solid #c8c0d8;
