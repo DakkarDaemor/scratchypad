@@ -22,7 +22,7 @@ export function TopBar({
   return (
     <div className={s.bar}>
       {canToggleSidebar && (
-        <IconBtn title="Toggle sidebar" active={sidebarOpen} onClick={onToggleSidebar}>≡</IconBtn>
+        <IconBtn title="Toggle sidebar" active={sidebarOpen} onClick={onToggleSidebar} className={s.hamburger}>≡</IconBtn>
       )}
       <span className={s.title}>ScratchyPad</span>
       <div className={s.spacer} />

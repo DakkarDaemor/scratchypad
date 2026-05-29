@@ -1,12 +1,12 @@
 import s from './ui.module.css';
 
-export function IconBtn({ children, onClick, active, title, disabled }) {
+export function IconBtn({ children, onClick, active, title, disabled, className: extra = '' }) {
   return (
     <button
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className={`${s.iconBtn}${active ? ` ${s.active}` : ''}`}
+      className={`${s.iconBtn}${active ? ` ${s.active}` : ''}${extra ? ` ${extra}` : ''}`}
     >{children}</button>
   );
 }

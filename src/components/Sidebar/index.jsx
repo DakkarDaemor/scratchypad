@@ -29,7 +29,7 @@ export function Sidebar({ open = true, isMobile, files, loading, openTabFileIds,
       <div className={s.header}>
         <span className={s.filesLabel}>Files</span>
         <IconBtn title="Refresh" onClick={onRefresh} disabled={loading}>↻</IconBtn>
-        <IconBtn title="Close" onClick={onClose}>×</IconBtn>
+        {isMobile && <IconBtn title="Close" onClick={onClose}>×</IconBtn>}
       </div>
 
       <div className={s.list}>
