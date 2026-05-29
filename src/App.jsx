@@ -302,7 +302,6 @@ export default function ScratchyPad() {
         canToggleSidebar={!isLarge}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(o => !o)}
-        status={status}
         canSplit={canSplit}
         hasSplit={!!session.rightTabId}
         onToggleSplit={session.toggleSplit}
@@ -374,6 +373,7 @@ export default function ScratchyPad() {
         onAction={runAI}
         aiConfigured={isAiConfigured(aiConfig)}
         onOpenSettings={openSettings}
+        status={status}
       />
 
       {panel === 'settings' && (

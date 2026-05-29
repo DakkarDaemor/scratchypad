@@ -1,7 +1,7 @@
-import { AI_ACTIONS } from '../../constants';
+import { AI_ACTIONS, STATUS_COLOR } from '../../constants';
 import s from './AIBar.module.css';
 
-export function AIBar({ loading, wordCount, charCount, onAction, aiConfigured, onOpenSettings }) {
+export function AIBar({ loading, wordCount, charCount, onAction, aiConfigured, onOpenSettings, status }) {
   return (
     <div className={s.bar}>
       <div className={s.actions}>
@@ -17,6 +17,11 @@ export function AIBar({ loading, wordCount, charCount, onAction, aiConfigured, o
         }
       </div>
       <span className={s.count}>{wordCount} w · {charCount} ch</span>
+      {status?.msg && (
+        <div className={s.statusOverlay} style={{ color: STATUS_COLOR[status.type] }}>
+          {status.msg}
+        </div>
+      )}
     </div>
   );
 }
