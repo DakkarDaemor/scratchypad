@@ -1,4 +1,4 @@
-import { Overlay, Modal, Field, Inp, Btn, Row } from '../ui';
+import { Overlay, Modal, Field, Inp, Btn, Row } from '../../ui';
 import s from './SettingsModal.module.css';
 
 const PROVIDERS = [

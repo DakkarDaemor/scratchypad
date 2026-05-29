@@ -1,4 +1,4 @@
-import { AI_ACTIONS } from '../constants';
+import { AI_ACTIONS } from '../../constants';
 import s from './AIBar.module.css';
 
 export function AIBar({ loading, wordCount, charCount, onAction, aiConfigured, onOpenSettings }) {

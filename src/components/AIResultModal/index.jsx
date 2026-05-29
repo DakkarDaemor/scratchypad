@@ -1,4 +1,4 @@
-import { Overlay, Modal, Btn, Row } from '../ui';
+import { Overlay, Modal, Btn, Row } from '../../ui';
 import s from './AIResultModal.module.css';
 
 export function AIResultModal({ label, result, onDiscard, onNewTab, onApply }) {

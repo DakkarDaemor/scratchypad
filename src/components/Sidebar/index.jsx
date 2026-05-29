@@ -1,4 +1,4 @@
-import { IconBtn } from '../ui';
+import { IconBtn } from '../../ui';
 import s from './Sidebar.module.css';
 
 function SidebarFile({ name, open, onClick, onDelete }) {

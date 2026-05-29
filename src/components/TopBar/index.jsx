@@ -1,5 +1,5 @@
-import { STATUS_COLOR } from '../constants';
-import { IconBtn, Btn } from '../ui';
+import { STATUS_COLOR } from '../../constants';
+import { IconBtn, Btn } from '../../ui';
 import s from './TopBar.module.css';
 
 export function TopBar({ canToggleSidebar, sidebarOpen, onToggleSidebar, status, canSplit, hasSplit, onToggleSplit, loading, onSave, onOpenSettings }) {

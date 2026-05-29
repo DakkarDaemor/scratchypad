@@ -1,5 +1,5 @@
-import { FONTS, STATUS_COLOR } from '../constants';
-import { Btn } from '../ui';
+import { FONTS, STATUS_COLOR } from '../../constants';
+import { Btn } from '../../ui';
 import s from './LoginScreen.module.css';
 
 export function LoginScreen({ onLogin, loading, status }) {
