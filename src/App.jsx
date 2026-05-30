@@ -43,6 +43,7 @@ export default function ScratchyPad() {
   const [findTrigger,    setFindTrigger]    = useState(null);
   const [aiResult,       setAiResult]       = useState('');
   const [aiLabel,        setAiLabel]        = useState('');
+  const [aiAppend,       setAiAppend]       = useState(false);
   const [sidebarOpen,    setSidebarOpen]    = useState(false);
   const [driveFiles,     setDriveFiles]     = useState([]);
   const [driveLoad,      setDriveLoad]      = useState(false);
@@ -297,7 +298,9 @@ export default function ScratchyPad() {
     const content = getSelected();
     if (!content.trim()) { flash('Nothing to process', 'warn'); return; }
     const label = typeof action === 'string' ? action : action.label;
-    setLoading(true); setAiLabel(label); flash(`Running "${label}"…`, 'info', true);
+    setLoading(true); setAiLabel(label);
+    setAiAppend((typeof action === 'string' && action === 'Continue') || (typeof action === 'object' && !!action.append));
+    flash(`Running "${label}"…`, 'info', true);
     try {
       let result;
       if (typeof action === 'string') {
@@ -319,10 +322,17 @@ export default function ScratchyPad() {
     const tab = session.getTab(session.focusedId);
     if (!tab) return;
     const ta = (session.focusedPane === 'left' ? leftTaRef : rightTaRef).current;
-    let newText = aiResult;
-    if (ta) {
-      const { selectionStart: ss, selectionEnd: se } = ta;
-      if (ss !== se) newText = tab.text.substring(0, ss) + aiResult + tab.text.substring(se);
+    let newText;
+    if (aiAppend) {
+      const insertPos = ta && ta.selectionStart !== ta.selectionEnd ? ta.selectionEnd : tab.text.length;
+      const sep = tab.text.length > 0 && !tab.text.endsWith('\n') ? '\n' : '';
+      newText = tab.text.substring(0, insertPos) + sep + aiResult + tab.text.substring(insertPos);
+    } else {
+      newText = aiResult;
+      if (ta) {
+        const { selectionStart: ss, selectionEnd: se } = ta;
+        if (ss !== se) newText = tab.text.substring(0, ss) + aiResult + tab.text.substring(se);
+      }
     }
     session.updateTab(session.focusedId, { text: newText, dirty: true });
     setPanel(null); setAiResult('');
@@ -481,6 +491,7 @@ export default function ScratchyPad() {
         <AIResultModal
           label={aiLabel}
           result={aiResult}
+          append={aiAppend}
           onDiscard={() => { setPanel(null); setAiResult(''); }}
           onNewTab={applyResultNewTab}
           onApply={applyResult}

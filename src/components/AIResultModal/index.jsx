@@ -4,7 +4,7 @@ import s from './AIResultModal.module.css';
 
 marked.use({ breaks: true, gfm: true });
 
-export function AIResultModal({ label, result, onDiscard, onNewTab, onApply }) {
+export function AIResultModal({ label, result, append, onDiscard, onNewTab, onApply }) {
   return (
     <Overlay onClose={onDiscard}>
       <Modal title={label} wide>
@@ -12,7 +12,7 @@ export function AIResultModal({ label, result, onDiscard, onNewTab, onApply }) {
         <Row>
           <Btn onClick={onDiscard}>Discard</Btn>
           <Btn onClick={onNewTab}>New tab</Btn>
-          <Btn accent onClick={onApply}>Apply (replace)</Btn>
+          <Btn accent onClick={onApply}>Apply ({append ? 'append' : 'replace'})</Btn>
         </Row>
       </Modal>
     </Overlay>

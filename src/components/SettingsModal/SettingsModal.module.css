@@ -150,3 +150,15 @@
   font-size: 14px;
   font-weight: 500;
 }
+
+.appendBadge {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #7b6bb0;
+  background: #ede8f8;
+  border: 1px solid #c4b5e8;
+  border-radius: 3px;
+  padding: 1px 5px;
+  vertical-align: middle;
+}

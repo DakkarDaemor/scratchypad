@@ -27,12 +27,13 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
   const [activeTab, setActiveTab] = useState('ai');
   const [newLabel,  setNewLabel]  = useState('');
   const [newPrompt, setNewPrompt] = useState('');
+  const [newAppend, setNewAppend] = useState(false);
   const customActions = config.customActions || [];
 
   const addAction = () => {
     if (!newLabel.trim() || !newPrompt.trim()) return;
-    set('customActions', [...customActions, { id: Date.now().toString(), label: newLabel.trim(), prompt: newPrompt.trim() }]);
-    setNewLabel(''); setNewPrompt('');
+    set('customActions', [...customActions, { id: Date.now().toString(), label: newLabel.trim(), prompt: newPrompt.trim(), append: newAppend }]);
+    setNewLabel(''); setNewPrompt(''); setNewAppend(false);
   };
   const removeAction = id => set('customActions', customActions.filter(a => a.id !== id));
 
@@ -143,7 +144,10 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
                   {customActions.map(a => (
                     <div key={a.id} className={s.customAction}>
                       <div className={s.customActionInfo}>
-                        <span className={s.customActionLabel}>{a.label}</span>
+                        <span className={s.customActionLabel}>
+                          {a.label}
+                          {a.append && <span className={s.appendBadge}>append</span>}
+                        </span>
                         <span className={s.customActionPrompt}>{a.prompt.length > 60 ? a.prompt.slice(0, 60) + '…' : a.prompt}</span>
                       </div>
                       <button className={s.customActionDel} onClick={() => removeAction(a.id)} title="Remove">×</button>
@@ -160,6 +164,16 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
                   placeholder={'Prompt — usa {{text}} per il testo selezionato\n\nes. Traduci in spagnolo, mantenendo tono e stile:\n\n{{text}}'}
                   rows={4}
                 />
+                <label className={s.checkRow}>
+                  <input
+                    type="checkbox"
+                    checked={newAppend}
+                    onChange={e => setNewAppend(e.target.checked)}
+                    style={{ accentColor: '#8b6fcb' }}
+                  />
+                  <span>Append instead of replace</span>
+                  <span className={s.providerSub}>aggiunge il risultato in fondo al testo</span>
+                </label>
                 <Btn onClick={addAction} disabled={!newLabel.trim() || !newPrompt.trim()}>+ Add action</Btn>
               </div>
             </Field>
