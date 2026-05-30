@@ -48,7 +48,7 @@ export const TAB_COLORS = [
   '#5aabab', '#6a95cc', '#9a78c8', '#c86a9a',
 ];
 
-export const AI_ACTIONS = ['Summarize', 'Improve', 'Fix grammar', 'Shorten', 'Expand', 'Bullet points', 'Tone', 'IT ↔ EN'];
+export const AI_ACTIONS = ['Summarize', 'Improve', 'Fix grammar', 'Shorten', 'Expand', 'Bullet points', 'Tone', 'IT ↔ EN', 'Continue'];
 
 export const AI_PROMPTS = {
   'Summarize':     c => `Summarize this text concisely. Use the same language as the text. Reply only with the summary.\n\n${c}`,
@@ -59,4 +59,5 @@ export const AI_PROMPTS = {
   'Bullet points': c => `Convert this text into a clear bullet-point list. If it is already a list, convert it back to prose. Keep the same language. Reply only with the result.\n\n${c}`,
   'Tone':          c => `If this text sounds informal, make it formal. If it sounds formal, make it informal. Keep the same language and meaning. Reply only with the result.\n\n${c}`,
   'IT ↔ EN':       c => `If this text is in Italian translate to English; if in English translate to Italian. Reply only with the translation.\n\n${c}`,
+  'Continue':      c => `Continue this text naturally, maintaining the same style, tone and language. Reply only with the continuation, not the original text.\n\n${c}`,
 };
