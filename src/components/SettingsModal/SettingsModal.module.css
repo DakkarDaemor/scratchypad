@@ -39,6 +39,72 @@
   text-decoration: underline;
 }
 
+.customList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.customAction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid #e0daf0;
+  border-radius: 6px;
+  background: #faf9fd;
+}
+.customActionInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.customActionLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #2a2825;
+}
+.customActionPrompt {
+  font-size: 11px;
+  color: #8a8480;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.customActionDel {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid #e0daf0;
+  border-radius: 4px;
+  color: #b88a8a;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 1px 6px;
+}
+.customActionDel:hover { background: #fdf0f0; border-color: #c46a6a; color: #c46a6a; }
+.customForm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.customTextarea {
+  width: 100%;
+  border: 1px solid #d4cee8;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  background: #fff;
+  color: #2a2825;
+  resize: vertical;
+  outline: none;
+  line-height: 1.5;
+}
+.customTextarea:focus { border-color: #9b85c4; }
+
 .checkRow {
   display: flex;
   align-items: center;

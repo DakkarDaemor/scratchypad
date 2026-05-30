@@ -15,7 +15,7 @@ function DictaphoneBtn({ dictating, onStart, onStop }) {
   );
 }
 
-export function AIBar({ loading, wordCount, charCount, onAction, aiConfigured, onOpenSettings, status, dictationMode, dictating, onDictStart, onDictStop }) {
+export function AIBar({ loading, wordCount, charCount, onAction, aiConfigured, onOpenSettings, status, dictationMode, dictating, onDictStart, onDictStop, customActions = [] }) {
   return (
     <div className={s.bar}>
       {dictationMode
@@ -23,9 +23,15 @@ export function AIBar({ loading, wordCount, charCount, onAction, aiConfigured, o
         : <div className={s.actions}>
             <span className={s.label}>AI</span>
             {aiConfigured
-              ? AI_ACTIONS.map(a => (
-                  <button key={a} disabled={loading} onClick={() => onAction(a)} className={s.action}>{a}</button>
-                ))
+              ? <>
+                  {AI_ACTIONS.map(a => (
+                    <button key={a} disabled={loading} onClick={() => onAction(a)} className={s.action}>{a}</button>
+                  ))}
+                  {customActions.length > 0 && <span className={s.actionSep}>|</span>}
+                  {customActions.map(a => (
+                    <button key={a.id} disabled={loading} onClick={() => onAction(a)} className={s.action}>{a.label}</button>
+                  ))}
+                </>
               : <span className={s.unconfigured}>
                   non configurata —{' '}
                   <button onClick={onOpenSettings} className={s.settingsLink}>impostazioni</button>

@@ -53,24 +53,17 @@ async function callGemini(apiKey, model, prompt) {
 }
 
 export function useAI(config) {
-  const run = async (action, content) => {
-    const prompt = AI_PROMPTS[action](content);
+  const dispatch = async (prompt) => {
     const { provider = 'claude', claudeKey, openrouterKey, openrouterModel, groqKey, groqModel, openaiKey, openaiModel, geminiKey, geminiModel } = config || {};
-
-    if (provider === 'openrouter') {
-      return callOpenAI('https://openrouter.ai/api/v1/chat/completions', openrouterKey, openrouterModel, prompt);
-    }
-    if (provider === 'groq') {
-      return callOpenAI('https://api.groq.com/openai/v1/chat/completions', groqKey, groqModel, prompt);
-    }
-    if (provider === 'openai') {
-      return callOpenAI('https://api.openai.com/v1/chat/completions', openaiKey, openaiModel, prompt);
-    }
-    if (provider === 'gemini') {
-      return callGemini(geminiKey, geminiModel, prompt);
-    }
+    if (provider === 'openrouter') return callOpenAI('https://openrouter.ai/api/v1/chat/completions', openrouterKey, openrouterModel, prompt);
+    if (provider === 'groq')       return callOpenAI('https://api.groq.com/openai/v1/chat/completions', groqKey, groqModel, prompt);
+    if (provider === 'openai')     return callOpenAI('https://api.openai.com/v1/chat/completions', openaiKey, openaiModel, prompt);
+    if (provider === 'gemini')     return callGemini(geminiKey, geminiModel, prompt);
     return callClaude(claudeKey, prompt);
   };
 
-  return { run };
+  const run       = (action, content) => dispatch(AI_PROMPTS[action](content));
+  const runPrompt = (prompt)          => dispatch(prompt);
+
+  return { run, runPrompt };
 }

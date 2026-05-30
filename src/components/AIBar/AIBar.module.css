@@ -41,6 +41,11 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+.actionSep {
+  color: #d8d0e4;
+  font-size: 12px;
+  user-select: none;
+}
 .unconfigured {
   font-size: 11px;
   color: #b8b0c8;

@@ -285,9 +285,18 @@ export default function ScratchyPad() {
   const runAI = async action => {
     const content = getSelected();
     if (!content.trim()) { flash('Nothing to process', 'warn'); return; }
-    setLoading(true); setAiLabel(action); flash(`Running "${action}"…`);
+    const label = typeof action === 'string' ? action : action.label;
+    setLoading(true); setAiLabel(label); flash(`Running "${label}"…`);
     try {
-      const result = await ai.run(action, content);
+      let result;
+      if (typeof action === 'string') {
+        result = await ai.run(action, content);
+      } else {
+        const prompt = action.prompt.includes('{{text}}')
+          ? action.prompt.replace(/\{\{text\}\}/g, content)
+          : action.prompt + '\n\n' + content;
+        result = await ai.runPrompt(prompt);
+      }
       setAiResult(result); setPanel('result');
       setStatus({ msg: '', type: 'info' });
     } catch (e) { flash(`AI error: ${e.message}`, 'err'); }
@@ -434,6 +443,7 @@ export default function ScratchyPad() {
         charCount={focusedText.length}
         onAction={runAI}
         aiConfigured={isAiConfigured(aiConfig)}
+        customActions={aiConfig.customActions || []}
         onOpenSettings={openSettings}
         status={status}
         dictationMode={dictationMode}

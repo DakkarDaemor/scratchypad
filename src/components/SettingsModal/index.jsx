@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Overlay, Modal, Field, Inp, Btn, Row } from '../../ui';
 import s from './SettingsModal.module.css';
 
@@ -15,6 +16,17 @@ const A = ({ href, children }) => (
 
 export function SettingsModal({ config, onConfigChange, loading, onSave, onLogout, onClose }) {
   const set = (key, val) => onConfigChange({ ...config, [key]: val });
+
+  const [newLabel,  setNewLabel]  = useState('');
+  const [newPrompt, setNewPrompt] = useState('');
+  const customActions = config.customActions || [];
+
+  const addAction = () => {
+    if (!newLabel.trim() || !newPrompt.trim()) return;
+    set('customActions', [...customActions, { id: Date.now().toString(), label: newLabel.trim(), prompt: newPrompt.trim() }]);
+    setNewLabel(''); setNewPrompt('');
+  };
+  const removeAction = id => set('customActions', customActions.filter(a => a.id !== id));
 
   return (
     <Overlay onClose={onClose}>
@@ -94,6 +106,33 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
             <span>Markdown preview</span>
             <span className={s.providerSub}>mostra pulsante Edit / Preview nell'editor</span>
           </label>
+        </Field>
+
+        <Field label="Custom AI Actions" hint={<>Use <code>{'{{text}}'}</code> as placeholder for the selected text</>}>
+          {customActions.length > 0 && (
+            <div className={s.customList}>
+              {customActions.map(a => (
+                <div key={a.id} className={s.customAction}>
+                  <div className={s.customActionInfo}>
+                    <span className={s.customActionLabel}>{a.label}</span>
+                    <span className={s.customActionPrompt}>{a.prompt.length > 60 ? a.prompt.slice(0, 60) + '…' : a.prompt}</span>
+                  </div>
+                  <button className={s.customActionDel} onClick={() => removeAction(a.id)} title="Remove">×</button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className={s.customForm}>
+            <Inp value={newLabel} onChange={e => setNewLabel(e.target.value)} placeholder="Action name (e.g. Translate to French)" />
+            <textarea
+              className={s.customTextarea}
+              value={newPrompt}
+              onChange={e => setNewPrompt(e.target.value)}
+              placeholder={'Prompt (e.g. Translate to French:\n\n{{text}})'}
+              rows={3}
+            />
+            <Btn onClick={addAction} disabled={!newLabel.trim() || !newPrompt.trim()}>+ Add action</Btn>
+          </div>
         </Field>
 
         <Row style={{ justifyContent: 'space-between' }}>
