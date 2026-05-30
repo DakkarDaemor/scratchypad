@@ -61,10 +61,87 @@
   font-family: 'DM Sans', sans-serif;
   text-decoration: underline;
 }
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .count {
   font-size: 10px;
   color: #c5bfd0;
 }
+.configBtn {
+  background: none;
+  border: none;
+  color: #c5bfd0;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 2px;
+  line-height: 1;
+  font-family: 'DM Sans', sans-serif;
+  transition: color 0.15s;
+}
+.configBtn:hover { color: #9b85c4; }
+.configBtnOn { color: #9b85c4; }
+
+/* ── Config panel ── */
+.configPanel {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background: #f5f3fc;
+  border: 1px solid #e0daf0;
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  padding: 10px 14px 6px;
+  max-height: 230px;
+  overflow-y: auto;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+  z-index: 50;
+}
+.configHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.configTitle {
+  font-size: 10px;
+  color: #9b85c4;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+}
+.configClose {
+  background: none;
+  border: none;
+  color: #b8b0c8;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 0;
+  line-height: 1;
+}
+.configClose:hover { color: #6a5f8a; }
+.configList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 16px;
+}
+.configRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px 0;
+  min-width: 120px;
+}
+.configRowLabel {
+  font-size: 12px;
+  color: #5a5070;
+  font-family: 'DM Sans', sans-serif;
+}
+
 .statusOverlay {
   position: absolute;
   inset: 0;

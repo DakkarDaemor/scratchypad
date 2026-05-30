@@ -18,13 +18,14 @@ export const DEFAULT_AI_CONFIG = {
 export const STATUS_COLOR = { ok: '#6aa4bc', err: '#c46a6a', warn: '#9b85c4', info: '#9b85c4' };
 
 export const KEYS = {
-  GDRIVE_TOKEN:  'sp_gdrive_token',
-  GDRIVE_EXPIRY: 'sp_gdrive_expiry',
-  GDRIVE_FOLDER: 'sp_gdrive_folder',
-  GDRIVE_CONFIG: 'sp_gdrive_config_id',
-  SESSION:       'sp_session',
-  FONT_SIZE:     'sp_font_size',
-  SNIPPET_INDEX: 'sp_snippet_index',
+  GDRIVE_TOKEN:   'sp_gdrive_token',
+  GDRIVE_EXPIRY:  'sp_gdrive_expiry',
+  GDRIVE_FOLDER:  'sp_gdrive_folder',
+  GDRIVE_CONFIG:  'sp_gdrive_config_id',
+  SESSION:        'sp_session',
+  FONT_SIZE:      'sp_font_size',
+  SNIPPET_INDEX:  'sp_snippet_index',
+  HIDDEN_ACTIONS: 'sp_hidden_actions',
 };
 
 export const FONT_MIN     = 12;

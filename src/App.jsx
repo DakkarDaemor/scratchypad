@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { FONTS, KEYS, FONT_MIN, FONT_MAX, FONT_DEFAULT, DEFAULT_AI_CONFIG } from './constants';
+import { FONTS, KEYS, FONT_MIN, FONT_MAX, FONT_DEFAULT, DEFAULT_AI_CONFIG, AI_ACTIONS } from './constants';
 
 const readSnippetIndex = () => {
   try { return JSON.parse(localStorage.getItem(KEYS.SNIPPET_INDEX) || '{}'); } catch { return {}; }
@@ -50,6 +50,9 @@ export default function ScratchyPad() {
   const [fontSize,       setFontSize]       = useState(() => {
     const n = Number(localStorage.getItem(KEYS.FONT_SIZE));
     return n >= FONT_MIN && n <= FONT_MAX ? n : FONT_DEFAULT;
+  });
+  const [hiddenActions,  setHiddenActions]  = useState(() => {
+    try { return JSON.parse(localStorage.getItem(KEYS.HIDDEN_ACTIONS) || '[]'); } catch { return []; }
   });
 
   const leftTaRef  = useRef(null);
@@ -120,6 +123,10 @@ export default function ScratchyPad() {
   useEffect(() => {
     localStorage.setItem(KEYS.FONT_SIZE, String(fontSize));
   }, [fontSize]);
+
+  useEffect(() => {
+    localStorage.setItem(KEYS.HIDDEN_ACTIONS, JSON.stringify(hiddenActions));
+  }, [hiddenActions]);
 
   useEffect(() => {
     const tok = localStorage.getItem('sp_gdrive_token');
@@ -444,6 +451,8 @@ export default function ScratchyPad() {
         onAction={runAI}
         aiConfigured={isAiConfigured(aiConfig)}
         customActions={aiConfig.customActions || []}
+        hiddenActions={hiddenActions}
+        onHiddenActionsChange={setHiddenActions}
         onOpenSettings={openSettings}
         status={status}
         dictationMode={dictationMode}
