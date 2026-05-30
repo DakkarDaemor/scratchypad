@@ -13,6 +13,7 @@ const PROVIDERS = [
 const TABS = [
   { id: 'editor',  label: 'Editor' },
   { id: 'ai',      label: 'AI' },
+  { id: 'actions', label: 'Actions' },
   { id: 'account', label: 'Account' },
 ];
 
@@ -131,6 +132,11 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
               </Field>
             </>)}
 
+          </div>
+        )}
+
+        {activeTab === 'actions' && (
+          <div className={s.tabContent}>
             <Field label="Custom AI Actions" hint={<>Use <code>{'{{text}}'}</code> as placeholder for the selected text</>}>
               {customActions.length > 0 && (
                 <div className={s.customList}>
