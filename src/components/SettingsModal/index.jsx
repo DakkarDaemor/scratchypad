@@ -102,7 +102,7 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
                 <Inp type="password" value={config.openaiKey} onChange={e => set('openaiKey', e.target.value)} placeholder="sk-…" />
               </Field>
               <Field label="Model" hint={<><A href="https://platform.openai.com/docs/models">available models ↗</A></>}>
-                <Inp value={config.openaiModel} onChange={e => set('openaiModel', e.target.value)} placeholder="gpt-4o-mini" />
+                <Inp value={config.openaiModel} onChange={e => set('openaiModel', e.target.value)} placeholder="gpt-5.4-mini" />
               </Field>
             </>)}
 
@@ -111,7 +111,7 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
                 <Inp type="password" value={config.geminiKey} onChange={e => set('geminiKey', e.target.value)} placeholder="AIza…" />
               </Field>
               <Field label="Model" hint={<><A href="https://ai.google.dev/gemini-api/docs/models">available models ↗</A></>}>
-                <Inp value={config.geminiModel} onChange={e => set('geminiModel', e.target.value)} placeholder="gemini-2.0-flash" />
+                <Inp value={config.geminiModel} onChange={e => set('geminiModel', e.target.value)} placeholder="gemini-3.5-flash" />
               </Field>
             </>)}
 
@@ -120,7 +120,7 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
                 <Inp type="password" value={config.openrouterKey} onChange={e => set('openrouterKey', e.target.value)} placeholder="sk-or-…" />
               </Field>
               <Field label="Model" hint={<><A href="https://openrouter.ai/models">browse models ↗</A> · append ":free" for free tier</>}>
-                <Inp value={config.openrouterModel} onChange={e => set('openrouterModel', e.target.value)} placeholder="google/gemini-2.0-flash-exp:free" />
+                <Inp value={config.openrouterModel} onChange={e => set('openrouterModel', e.target.value)} placeholder="openai/gpt-oss-120b:free" />
               </Field>
             </>)}
 
