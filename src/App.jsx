@@ -40,6 +40,7 @@ export default function ScratchyPad() {
   const [deleteConfirm,  setDeleteConfirm]  = useState(null); // { fileId, name }
   const [restoreConfirm, setRestoreConfirm] = useState(null); // { bakFileId, bakName, originalName }
   const [loading,        setLoading]        = useState(false);
+  const [findTrigger,    setFindTrigger]    = useState(null);
   const [aiResult,       setAiResult]       = useState('');
   const [aiLabel,        setAiLabel]        = useState('');
   const [sidebarOpen,    setSidebarOpen]    = useState(false);
@@ -363,6 +364,8 @@ export default function ScratchyPad() {
         dictationMode={dictationMode}
         onToggleDictationMode={() => setDictationMode(m => !m)}
         dictationSupported={dictation.supported}
+        onOpenFind={() => setFindTrigger('find')}
+        onOpenFindReplace={() => setFindTrigger('replace')}
       />
 
       <TabBar
@@ -400,6 +403,8 @@ export default function ScratchyPad() {
             fontSize={fontSize}
             onFontResize={resizeFont}
             markdownEnabled={!!aiConfig.markdownMode}
+            findTrigger={findTrigger}
+            onFindTriggered={() => setFindTrigger(null)}
           />
           {session.rightTabId && (
             <>
@@ -415,6 +420,8 @@ export default function ScratchyPad() {
                 fontSize={fontSize}
                 onFontResize={resizeFont}
                 markdownEnabled={!!aiConfig.markdownMode}
+                findTrigger={findTrigger}
+                onFindTriggered={() => setFindTrigger(null)}
               />
             </>
           )}

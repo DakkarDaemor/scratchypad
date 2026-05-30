@@ -1,7 +1,9 @@
 # ScratchyPad
 
+**Your data in your Google Drive. AI power via your own API key. No backend, no subscription, no lock-in.**
+
 A minimal online scratch editor — multi-tab text drafting with AI writing assistance.  
-Your data lives in **your** Google Drive. No backend, no tracking.
+No tracking, no server of ours ever sees your content.
 
 ## Features
 

@@ -67,6 +67,62 @@
 .preview th, .preview td { border: 1px solid #e0daf0; padding: 0.4em 0.7em; font-size: 0.95em; }
 .preview th { background: #f5f3fc; font-weight: 500; }
 
+.findBar {
+  background: #f5f3fc;
+  border-bottom: 1px solid #e0daf0;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.findRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.findInput {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #d4cee8;
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  background: #fff;
+  color: #2a2825;
+  outline: none;
+}
+.findInput:focus { border-color: #9b85c4; }
+
+.findCount {
+  font-size: 11px;
+  color: #9b85c4;
+  min-width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.findBtn, .findBtnWide, .findClose {
+  border: 1px solid #d4cee8;
+  border-radius: 4px;
+  background: #fff;
+  color: #6a5f8a;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.findBtn:hover:not(:disabled),
+.findBtnWide:hover:not(:disabled),
+.findClose:hover { background: #ebe6f8; }
+.findBtn:disabled, .findBtnWide:disabled { opacity: 0.4; cursor: default; }
+.findBtn      { font-size: 13px; padding: 2px 7px; }
+.findBtnWide  { font-size: 11px; padding: 2px 9px; }
+.findClose    { font-size: 16px; padding: 0px 6px; }
+
 .toggleBtn {
   position: absolute;
   top: 8px;

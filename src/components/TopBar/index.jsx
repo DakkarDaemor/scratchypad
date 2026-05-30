@@ -7,6 +7,7 @@ export function TopBar({
   canSplit, hasSplit, onToggleSplit,
   loading, onSave, onOpenSettings,
   dictationMode, onToggleDictationMode, dictationSupported,
+  onOpenFind, onOpenFindReplace,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -38,6 +39,12 @@ export function TopBar({
         </Btn>
         {menuOpen && (
           <div className={s.menu}>
+            <button className={s.menuItem} onClick={() => { onOpenFind(); setMenuOpen(false); }}>
+              🔍 Find
+            </button>
+            <button className={s.menuItem} onClick={() => { onOpenFindReplace(); setMenuOpen(false); }}>
+              ↔ Find &amp; Replace
+            </button>
             <button className={s.menuItem} onClick={() => { onOpenSettings(); setMenuOpen(false); }}>
               ⚙ Settings
             </button>
