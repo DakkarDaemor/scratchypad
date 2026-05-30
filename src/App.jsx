@@ -38,6 +38,7 @@ export default function ScratchyPad() {
   const [status,         setStatus]         = useState({ msg: '', type: 'info' });
   const [errorDialog,    setErrorDialog]    = useState('');
   const [deleteConfirm,  setDeleteConfirm]  = useState(null); // { fileId, name }
+  const [closeTabConfirm, setCloseTabConfirm] = useState(null); // tab id
   const [restoreConfirm, setRestoreConfirm] = useState(null); // { bakFileId, bakName, originalName }
   const [loading,        setLoading]        = useState(false);
   const [findTrigger,    setFindTrigger]    = useState(null);
@@ -218,7 +219,11 @@ export default function ScratchyPad() {
 
   const driveNames = () => new Set(driveFiles.map(f => f.name));
   const handleNewTab   = () => { session.addNewTab(driveNames()); if (!isLarge) setSidebarOpen(false); };
-  const handleCloseTab = id => session.closeTab(id, driveNames());
+  const handleCloseTab = id => {
+    const tab = session.getTab(id);
+    if (tab?.dirty) { setCloseTabConfirm(id); return; }
+    session.closeTab(id, driveNames());
+  };
   const handleColorTab = (tabId, color) => session.updateTab(tabId, { color });
   const handleRenameTab = (id, name) => {
     const tab = session.getTab(id);
@@ -509,6 +514,24 @@ export default function ScratchyPad() {
               <Btn onClick={handleDeleteFile} disabled={loading}
                 style={{ background: '#c46a6a', borderColor: '#c46a6a', color: '#fff' }}>
                 {loading ? '…' : 'Delete'}
+              </Btn>
+            </Row>
+          </Modal>
+        </Overlay>
+      )}
+
+      {closeTabConfirm && (
+        <Overlay onClose={() => setCloseTabConfirm(null)} zIndex={300}>
+          <Modal title="Modifiche non salvate">
+            <p style={{ fontSize: 13, color: '#5a5570', lineHeight: 1.6, marginBottom: 20 }}>
+              La tab <strong>{session.getTab(closeTabConfirm)?.filename}</strong> ha modifiche non salvate.<br />
+              Chiudere senza salvare?
+            </p>
+            <Row>
+              <Btn onClick={() => setCloseTabConfirm(null)}>Annulla</Btn>
+              <Btn onClick={() => { session.closeTab(closeTabConfirm, driveNames()); setCloseTabConfirm(null); }}
+                style={{ background: '#c46a6a', borderColor: '#c46a6a', color: '#fff' }}>
+                Chiudi senza salvare
               </Btn>
             </Row>
           </Modal>
