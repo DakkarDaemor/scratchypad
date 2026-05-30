@@ -57,6 +57,11 @@ export function TopBar({
                 <span className={`${s.switch} ${dictationMode ? s.switchOn : ''}`} />
               </button>
             )}
+            <div className={s.menuSep} />
+            <div className={s.menuAbout}>
+              <span className={s.menuAboutName}>ScratchyPad <span className={s.menuAboutVersion}>v0.1.0</span></span>
+              <span className={s.menuAboutCredit}>by Fabio &amp; Claude</span>
+            </div>
           </div>
         )}
       </div>

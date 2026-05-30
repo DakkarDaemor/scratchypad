@@ -90,3 +90,30 @@
 }
 .switchOn { background: #9b85c4; }
 .switchOn::after { transform: translateX(12px); }
+
+.menuSep {
+  height: 1px;
+  background: #e8e4f0;
+  margin: 4px 0;
+}
+
+.menuAbout {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 14px 10px;
+}
+.menuAboutName {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6a5f8a;
+}
+.menuAboutVersion {
+  font-size: 11px;
+  font-weight: 400;
+  color: #a098b8;
+}
+.menuAboutCredit {
+  font-size: 11px;
+  color: #a098b8;
+}
