@@ -123,13 +123,13 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
             </div>
           )}
           <div className={s.customForm}>
-            <Inp value={newLabel} onChange={e => setNewLabel(e.target.value)} placeholder="Action name (e.g. Translate to French)" />
+            <Inp value={newLabel} onChange={e => setNewLabel(e.target.value)} placeholder="Nome (es. Traduci in spagnolo)" />
             <textarea
               className={s.customTextarea}
               value={newPrompt}
               onChange={e => setNewPrompt(e.target.value)}
-              placeholder={'Prompt (e.g. Translate to French:\n\n{{text}})'}
-              rows={3}
+              placeholder={'Prompt — usa {{text}} per il testo selezionato\n\nes. Traduci in spagnolo, mantenendo tono e stile:\n\n{{text}}'}
+              rows={4}
             />
             <Btn onClick={addAction} disabled={!newLabel.trim() || !newPrompt.trim()}>+ Add action</Btn>
           </div>
