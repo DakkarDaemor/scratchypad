@@ -55,8 +55,9 @@ export default function ScratchyPad() {
     try { return JSON.parse(localStorage.getItem(KEYS.HIDDEN_ACTIONS) || '[]'); } catch { return []; }
   });
 
-  const leftTaRef  = useRef(null);
-  const rightTaRef = useRef(null);
+  const leftTaRef    = useRef(null);
+  const rightTaRef   = useRef(null);
+  const flashTimerRef = useRef(null);
 
   const insertDictation = useCallback(transcript => {
     const pane  = session.focusedPane;
@@ -146,10 +147,13 @@ export default function ScratchyPad() {
   }, [sidebarVisible, isLoggedIn]);
 
   /* ── Helpers ── */
-  const flash = (msg, type = 'info') => {
+  const flash = (msg, type = 'info', persist = false) => {
     if (type === 'err') { setErrorDialog(msg); return; }
+    clearTimeout(flashTimerRef.current);
     setStatus({ msg, type });
-    setTimeout(() => setStatus({ msg: '', type: 'info' }), 3000);
+    if (!persist) {
+      flashTimerRef.current = setTimeout(() => setStatus({ msg: '', type: 'info' }), 3000);
+    }
   };
 
   const isAiConfigured = cfg => {
@@ -293,7 +297,7 @@ export default function ScratchyPad() {
     const content = getSelected();
     if (!content.trim()) { flash('Nothing to process', 'warn'); return; }
     const label = typeof action === 'string' ? action : action.label;
-    setLoading(true); setAiLabel(label); flash(`Running "${label}"…`);
+    setLoading(true); setAiLabel(label); flash(`Running "${label}"…`, 'info', true);
     try {
       let result;
       if (typeof action === 'string') {
@@ -305,6 +309,7 @@ export default function ScratchyPad() {
         result = await ai.runPrompt(prompt);
       }
       setAiResult(result); setPanel('result');
+      clearTimeout(flashTimerRef.current);
       setStatus({ msg: '', type: 'info' });
     } catch (e) { flash(`AI error: ${e.message}`, 'err'); }
     setLoading(false);
