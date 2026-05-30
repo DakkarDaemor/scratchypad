@@ -7,8 +7,21 @@
   line-height: 1.75;
   color: #363240;
   font-family: 'Lora', Georgia, serif;
-  white-space: pre-wrap;
   overflow-y: auto;
   max-height: 52vh;
   margin-bottom: 16px;
 }
+.result p       { margin: 0 0 0.8em; }
+.result p:last-child { margin-bottom: 0; }
+.result h1, .result h2, .result h3 { font-weight: 600; margin: 1em 0 0.4em; line-height: 1.3; }
+.result h1 { font-size: 1.2em; }
+.result h2 { font-size: 1.05em; }
+.result h3 { font-size: 0.95em; }
+.result ul, .result ol { margin: 0 0 0.8em 1.4em; padding: 0; }
+.result li { margin-bottom: 0.25em; }
+.result strong { font-weight: 600; color: #2a2040; }
+.result em { font-style: italic; }
+.result code { font-family: 'DM Mono', monospace; font-size: 0.85em; background: #e8e3f5; border-radius: 3px; padding: 1px 5px; }
+.result pre { background: #e8e3f5; border-radius: 5px; padding: 10px 14px; overflow-x: auto; margin: 0 0 0.8em; }
+.result pre code { background: none; padding: 0; font-size: 0.82em; }
+.result blockquote { border-left: 3px solid #c4b5e8; margin: 0 0 0.8em; padding: 2px 0 2px 12px; color: #7a7090; }
