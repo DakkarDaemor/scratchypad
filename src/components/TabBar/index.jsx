@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { TAB_COLORS } from '../../constants';
 import s from './TabBar.module.css';
 
@@ -62,9 +62,15 @@ export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, is
     return () => { document.removeEventListener('mousedown', h); document.removeEventListener('touchstart', h); };
   }, [!!popover]);
 
+  useLayoutEffect(() => {
+    if (!popover || !popoverRef.current) return;
+    const { width } = popoverRef.current.getBoundingClientRect();
+    const clamped = Math.max(8, Math.min(popover.x, window.innerWidth - width - 8));
+    if (clamped !== popover.x) setPopover(p => p ? { ...p, x: clamped } : p);
+  }, [popover?.tabId]);
+
   const openPopover = (tab, rect) => {
-    const x = Math.min(rect.left, window.innerWidth - 212);
-    setPopover({ tabId: tab.id, x, y: rect.bottom + 4, draftName: stripExt(tab.filename), color: tab.color || null });
+    setPopover({ tabId: tab.id, x: rect.left, y: rect.bottom + 4, draftName: stripExt(tab.filename), color: tab.color || null });
   };
 
   const commitPopoverRename = () => {
