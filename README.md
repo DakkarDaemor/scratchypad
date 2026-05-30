@@ -9,8 +9,8 @@ No tracking, no server of ours ever sees your content.
 
 - **Multi-tab editor** with drag-to-reorder, per-tab colors, and split-pane view (desktop)
 - **Google Drive sync** — files saved as `.md` to a `/scratchypad/` folder in your own Drive
-- **AI writing actions** on selection or full text: Summarize, Improve, Fix grammar, Shorten, Expand, Bullet points, Tone, IT ↔ EN
-- **Custom AI actions** — define your own prompts in Settings → Actions, with `{{text}}` placeholder
+- **AI writing actions** on selection or full text: Summarize, Improve, Fix grammar, Shorten, Expand, Bullet points, Tone, IT ↔ EN, Continue
+- **Custom AI actions** — define your own prompts in Settings → Actions, with `{{text}}` placeholder; each action can append to the text instead of replacing it
 - **Multiple AI providers** — Claude, ChatGPT, Gemini, OpenRouter, Groq (configurable in Settings)
 - **Markdown preview** — toggleable per pane with an Edit / Preview button
 - **Find & Replace** — Ctrl+F to find, Ctrl+H for find & replace; navigate with Enter / Shift+Enter
