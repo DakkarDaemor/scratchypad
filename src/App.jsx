@@ -329,7 +329,7 @@ export default function ScratchyPad() {
   };
 
   const applyResultNewTab = () => {
-    const base = session.getTab(session.focusedId)?.filename || 'scratch.txt';
+    const base = session.getTab(session.focusedId)?.filename || 'scratch.md';
     const tab  = mkTab(session.getNextFilename(base), aiResult, null);
     session.openInTab(tab.filename, tab.text, null);
     setPanel(null); setAiResult('');

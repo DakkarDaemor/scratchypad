@@ -2,8 +2,8 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { TAB_COLORS } from '../../constants';
 import s from './TabBar.module.css';
 
-const stripExt  = name => name.endsWith('.txt') ? name.slice(0, -4) : name;
-const ensureExt = name => name.includes('.') ? name : name + '.txt';
+const stripExt  = name => name.endsWith('.md') ? name.slice(0, -3) : name.endsWith('.txt') ? name.slice(0, -4) : name;
+const ensureExt = name => name.includes('.') ? name : name + '.md';
 
 function TabItem({ tab, isActive, isSecondary, isMobile, isDragging, isDragOver,
                    onClick, onClose,

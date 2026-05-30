@@ -1,6 +1,6 @@
 import { KEYS } from './constants';
 
-export const mkTab = (filename = 'scratch.txt', text = '', fileId = null) => ({
+export const mkTab = (filename = 'scratch.md', text = '', fileId = null) => ({
   id: `t${Date.now()}${Math.random().toString(36).slice(2, 5)}`,
   filename,
   text,

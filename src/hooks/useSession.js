@@ -38,7 +38,7 @@ export function useSession() {
 
   const addNewTab = (takenExternal = new Set()) => {
     const taken = new Set([...tabs.map(t => t.filename), ...takenExternal]);
-    const name = taken.has('scratch.txt') ? nextFilename('scratch.txt', taken) : 'scratch.txt';
+    const name = taken.has('scratch.md') ? nextFilename('scratch.md', taken) : 'scratch.md';
     const t = mkTab(name);
     setTabs(prev => [...prev, t]);
     setFocusedTab(t.id);
@@ -49,7 +49,7 @@ export function useSession() {
       const next = prev.filter(t => t.id !== id);
       if (next.length === 0) {
         const taken = new Set(takenExternal);
-        const name = taken.has('scratch.txt') ? nextFilename('scratch.txt', taken) : 'scratch.txt';
+        const name = taken.has('scratch.md') ? nextFilename('scratch.md', taken) : 'scratch.md';
         const t = mkTab(name);
         setLeftTabId(t.id);
         setRightTabId(null);

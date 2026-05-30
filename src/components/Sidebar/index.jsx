@@ -4,7 +4,7 @@ import s from './Sidebar.module.css';
 const stripLabel = name => {
   let n = name;
   if (n.endsWith('.bak')) n = n.slice(0, -4);
-  if (n.endsWith('.txt')) n = n.slice(0, -4);
+  if (n.endsWith('.md')) n = n.slice(0, -3); else if (n.endsWith('.txt')) n = n.slice(0, -4);
   return n;
 };
 

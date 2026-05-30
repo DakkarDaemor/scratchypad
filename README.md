@@ -8,10 +8,12 @@ No tracking, no server of ours ever sees your content.
 ## Features
 
 - **Multi-tab editor** with drag-to-reorder, per-tab colors, and split-pane view (desktop)
-- **Google Drive sync** — files saved to a `/scratchypad/` folder in your own Drive
+- **Google Drive sync** — files saved as `.md` to a `/scratchypad/` folder in your own Drive
 - **AI writing actions** on selection or full text: Summarize, Improve, Fix grammar, Shorten, Expand, Bullet points, Tone, IT ↔ EN
+- **Custom AI actions** — define your own prompts in Settings → Actions, with `{{text}}` placeholder
 - **Multiple AI providers** — Claude, ChatGPT, Gemini, OpenRouter, Groq (configurable in Settings)
 - **Markdown preview** — toggleable per pane with an Edit / Preview button
+- **Find & Replace** — Ctrl+F to find, Ctrl+H for find & replace; navigate with Enter / Shift+Enter
 - **Dictation** — speech-to-text input via Web Speech API
 - **Font resize** — Ctrl+scroll or pinch on mobile
 - **Auto-save** — draft persisted to localStorage on every keystroke
@@ -27,7 +29,7 @@ It only requests access to files it creates (`drive.file` scope), so it cannot s
 
 ### 2. AI provider
 
-Open **⚙ Settings** and choose a provider:
+Open **⚙ → Settings** (tabbed: Editor · AI · Actions · Account) and choose a provider:
 
 | Provider | Key format | Free tier |
 |---|---|---|
@@ -62,6 +64,10 @@ The repo includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) tha
 - [Google Drive REST API v3](https://developers.google.com/drive/api/v3/reference) + Google Identity Services (OAuth2)
 - AI: Anthropic Claude, OpenAI, Google Gemini, OpenRouter, Groq
 - [marked](https://marked.js.org/) for Markdown rendering
+
+## Credits
+
+Built by Fabio & Claude.
 
 ## License
 
