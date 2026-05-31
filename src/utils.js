@@ -1,5 +1,16 @@
 import { KEYS } from './constants';
 
+export const readSnippetIndex = () => {
+  try { return JSON.parse(localStorage.getItem(KEYS.SNIPPET_INDEX) || '{}'); } catch { return {}; }
+};
+
+export const writeSnippet = (fileId, text) => {
+  if (!fileId) return;
+  const idx = readSnippetIndex();
+  idx[fileId] = text.replace(/\s+/g, ' ').trim().slice(0, 80);
+  localStorage.setItem(KEYS.SNIPPET_INDEX, JSON.stringify(idx));
+};
+
 export const mkTab = (filename = 'scratch.md', text = '', fileId = null) => ({
   id: `t${Date.now()}${Math.random().toString(36).slice(2, 5)}`,
   filename,

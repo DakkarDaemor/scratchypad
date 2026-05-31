@@ -1,21 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { FONTS, KEYS, FONT_MIN, FONT_MAX, FONT_DEFAULT, DEFAULT_AI_CONFIG, AI_ACTIONS } from './constants';
-
-const readSnippetIndex = () => {
-  try { return JSON.parse(localStorage.getItem(KEYS.SNIPPET_INDEX) || '{}'); } catch { return {}; }
-};
-const writeSnippet = (fileId, text) => {
-  if (!fileId) return;
-  const idx = readSnippetIndex();
-  idx[fileId] = text.replace(/\s+/g, ' ').trim().slice(0, 80);
-  localStorage.setItem(KEYS.SNIPPET_INDEX, JSON.stringify(idx));
-};
-import { mkTab } from './utils';
+import { FONTS, KEYS, FONT_MIN, FONT_MAX, FONT_DEFAULT, DEFAULT_AI_CONFIG } from './constants';
+import { readSnippetIndex } from './utils';
 import { useGDrive } from './hooks/useGDrive';
 import { useAI } from './hooks/useAI';
 import { useSession } from './hooks/useSession';
 import { useSwipe } from './hooks/useSwipe';
 import { useDictation } from './hooks/useDictation';
+import { useDriveOps } from './hooks/useDriveOps';
+import { useAIActions } from './hooks/useAIActions';
 import { LoginScreen } from './components/LoginScreen';
 import { TopBar } from './components/TopBar';
 import { TabBar } from './components/TabBar';
@@ -24,43 +16,61 @@ import { EditorPane } from './components/EditorPane';
 import { AIBar } from './components/AIBar';
 import { SettingsModal } from './components/SettingsModal';
 import { AIResultModal } from './components/AIResultModal';
-import { Overlay, Modal, Btn, Row } from './ui';
+import { AppDialogs } from './components/AppDialogs';
 import s from './App.module.css';
 
 export default function ScratchyPad() {
   const session = useSession();
-  const drive = useGDrive();
+  const drive   = useGDrive();
 
-  const [aiConfig,       setAiConfig]       = useState({ ...DEFAULT_AI_CONFIG });
-  const [tmpConfig,      setTmpConfig]      = useState({ ...DEFAULT_AI_CONFIG });
-  const [isLoggedIn,     setIsLoggedIn]     = useState(false);
-  const [panel,          setPanel]          = useState(null);
-  const [status,         setStatus]         = useState({ msg: '', type: 'info' });
-  const [errorDialog,    setErrorDialog]    = useState('');
-  const [deleteConfirm,  setDeleteConfirm]  = useState(null); // { fileId, name }
-  const [closeTabConfirm, setCloseTabConfirm] = useState(null); // tab id
-  const [restoreConfirm, setRestoreConfirm] = useState(null); // { bakFileId, bakName, originalName }
-  const [loading,        setLoading]        = useState(false);
-  const [findTrigger,    setFindTrigger]    = useState(null);
-  const [aiResult,       setAiResult]       = useState('');
-  const [aiLabel,        setAiLabel]        = useState('');
-  const [aiAppend,       setAiAppend]       = useState(false);
-  const [sidebarOpen,    setSidebarOpen]    = useState(false);
-  const [driveFiles,     setDriveFiles]     = useState([]);
-  const [driveLoad,      setDriveLoad]      = useState(false);
-  const [winW,           setWinW]           = useState(window.innerWidth);
-  const [fontSize,       setFontSize]       = useState(() => {
+  const [aiConfig,        setAiConfig]        = useState({ ...DEFAULT_AI_CONFIG });
+  const [tmpConfig,       setTmpConfig]        = useState({ ...DEFAULT_AI_CONFIG });
+  const [isLoggedIn,      setIsLoggedIn]       = useState(false);
+  const [panel,           setPanel]            = useState(null);
+  const [status,          setStatus]           = useState({ msg: '', type: 'info' });
+  const [errorDialog,     setErrorDialog]      = useState('');
+  const [closeTabConfirm, setCloseTabConfirm]  = useState(null); // { id, filename }
+  const [loading,         setLoading]          = useState(false);
+  const [findTrigger,     setFindTrigger]      = useState(null);
+  const [sidebarOpen,     setSidebarOpen]      = useState(false);
+  const [winW,            setWinW]             = useState(window.innerWidth);
+  const [fontSize,        setFontSize]         = useState(() => {
     const n = Number(localStorage.getItem(KEYS.FONT_SIZE));
     return n >= FONT_MIN && n <= FONT_MAX ? n : FONT_DEFAULT;
   });
-  const [hiddenActions,  setHiddenActions]  = useState(() => {
+  const [hiddenActions,   setHiddenActions]    = useState(() => {
     try { return JSON.parse(localStorage.getItem(KEYS.HIDDEN_ACTIONS) || '[]'); } catch { return []; }
   });
 
-  const leftTaRef    = useRef(null);
-  const rightTaRef   = useRef(null);
+  const leftTaRef     = useRef(null);
+  const rightTaRef    = useRef(null);
   const flashTimerRef = useRef(null);
 
+  const isMobile       = winW < 680;
+  const canSplit       = winW >= 900;
+  const isLarge        = winW >= 1200;
+  const sidebarVisible = isLarge || sidebarOpen;
+
+  /* ── Flash helper ── */
+  const flash = (msg, type = 'info', persist = false) => {
+    if (type === 'err') { setErrorDialog(msg); return; }
+    clearTimeout(flashTimerRef.current);
+    setStatus({ msg, type });
+    if (!persist) {
+      flashTimerRef.current = setTimeout(() => setStatus({ msg: '', type: 'info' }), 3000);
+    }
+  };
+  const clearStatus = useCallback(() => {
+    clearTimeout(flashTimerRef.current);
+    setStatus({ msg: '', type: 'info' });
+  }, []);
+
+  /* ── Derived hooks ── */
+  const driveOps = useDriveOps({ drive, session, flash, setLoading, isLarge, setSidebarOpen, sidebarVisible });
+  const ai       = useAI(aiConfig);
+  const aiAct    = useAIActions({ ai, session, leftTaRef, rightTaRef, flash, clearStatus, setLoading, setPanel });
+
+  /* ── Dictation ── */
   const insertDictation = useCallback(transcript => {
     const pane  = session.focusedPane;
     const tabId = pane === 'left' ? session.leftTabId : session.rightTabId;
@@ -69,37 +79,28 @@ export default function ScratchyPad() {
     if (!tab) return;
     const t   = tab.text;
     const pos = ta ? ta.selectionStart : t.length;
-    const newText = t.substring(0, pos) + transcript + t.substring(pos);
-    session.updateTab(tabId, { text: newText, dirty: true });
+    session.updateTab(tabId, { text: t.substring(0, pos) + transcript + t.substring(pos), dirty: true });
     if (ta) requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = pos + transcript.length; });
   }, [session, leftTaRef, rightTaRef]);
 
   const dictation = useDictation(insertDictation);
   const [dictationMode, setDictationMode] = useState(false);
-
   useEffect(() => { if (!dictationMode) dictation.stop(); }, [dictationMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDictStop = useCallback(() => {
-    dictation.stop();
-    insertDictation('\n');
+    dictation.stop(); insertDictation('\n');
   }, [dictation, insertDictation]);
 
-  const ai             = useAI(aiConfig);
-  const isMobile       = winW < 680;
-  const canSplit       = winW >= 900;
-  const isLarge        = winW >= 1200;
-  const sidebarVisible = isLarge || sidebarOpen;
-
-  /* ── Swipe (mobile tab navigation) ── */
+  /* ── Swipe ── */
   const swipeHandlers = useSwipe({
     enabled: isMobile,
     onSwipeLeft: () => {
-      const idx = session.tabs.findIndex(t => t.id === session.focusedId);
+      const idx  = session.tabs.findIndex(t => t.id === session.focusedId);
       const next = session.tabs[idx + 1];
       if (next) session.setFocusedTab(next.id);
     },
     onSwipeRight: () => {
-      const idx = session.tabs.findIndex(t => t.id === session.focusedId);
+      const idx  = session.tabs.findIndex(t => t.id === session.focusedId);
       const prev = session.tabs[idx - 1];
       if (prev) session.setFocusedTab(prev.id);
     },
@@ -123,39 +124,30 @@ export default function ScratchyPad() {
     if (!canSplit && session.rightTabId) session.setRightTabId(null);
   }, [canSplit, session.rightTabId]);
 
-  useEffect(() => {
-    localStorage.setItem(KEYS.FONT_SIZE, String(fontSize));
-  }, [fontSize]);
-
-  useEffect(() => {
-    localStorage.setItem(KEYS.HIDDEN_ACTIONS, JSON.stringify(hiddenActions));
-  }, [hiddenActions]);
+  useEffect(() => { localStorage.setItem(KEYS.FONT_SIZE, String(fontSize)); }, [fontSize]);
+  useEffect(() => { localStorage.setItem(KEYS.HIDDEN_ACTIONS, JSON.stringify(hiddenActions)); }, [hiddenActions]);
 
   useEffect(() => {
     const tok = localStorage.getItem('sp_gdrive_token');
     const exp = Number(localStorage.getItem('sp_gdrive_expiry') || 0);
     if (tok && Date.now() < exp) {
       drive.loadConfig(tok)
-        .then(cfg => {
-          setAiConfig(cfg); setTmpConfig(cfg); setIsLoggedIn(true);
-          syncOpenTabs(session.tabs);
-        })
+        .then(cfg => { setAiConfig(cfg); setTmpConfig(cfg); setIsLoggedIn(true); syncOpenTabs(session.tabs); })
         .catch(() => {});
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (sidebarVisible && isLoggedIn) refreshDriveFiles();
-  }, [sidebarVisible, isLoggedIn]);
+    if (sidebarVisible && isLoggedIn) driveOps.refreshDriveFiles();
+  }, [sidebarVisible, isLoggedIn]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ── Helpers ── */
-  const flash = (msg, type = 'info', persist = false) => {
-    if (type === 'err') { setErrorDialog(msg); return; }
-    clearTimeout(flashTimerRef.current);
-    setStatus({ msg, type });
-    if (!persist) {
-      flashTimerRef.current = setTimeout(() => setStatus({ msg: '', type: 'info' }), 3000);
-    }
+  /* ── Auth ── */
+  const syncOpenTabs = async tabs => {
+    await Promise.all(
+      tabs.filter(t => t.fileId && !t.dirty).map(async tab => {
+        try { session.updateTab(tab.id, { text: await drive.downloadFile(tab.fileId) }); } catch {}
+      })
+    );
   };
 
   const isAiConfigured = cfg => {
@@ -167,37 +159,13 @@ export default function ScratchyPad() {
     return !!claudeKey;
   };
 
-  const syncOpenTabs = async tabs => {
-    const toSync = tabs.filter(t => t.fileId && !t.dirty);
-    await Promise.all(toSync.map(async tab => {
-      try {
-        const text = await drive.downloadFile(tab.fileId);
-        session.updateTab(tab.id, { text });
-      } catch {}
-    }));
-  };
-
-  const resizeFont = delta => setFontSize(prev => Math.min(FONT_MAX, Math.max(FONT_MIN, prev + delta)));
-
-  const getSelected = () => {
-    const ref = session.focusedPane === 'left' ? leftTaRef : rightTaRef;
-    const tab = session.getTab(session.focusedId);
-    const t   = tab?.text || '';
-    const ta  = ref.current;
-    if (!ta) return t;
-    const sel = ta.value.substring(ta.selectionStart, ta.selectionEnd);
-    return sel.trim() ? sel : t;
-  };
-
-  /* ── Auth ── */
   const login = async () => {
     setLoading(true);
     try {
       const tok  = await drive.getToken();
       const cfg  = await drive.loadConfig(tok);
       const tabs = session.tabs;
-      setAiConfig(cfg); setTmpConfig(cfg);
-      setIsLoggedIn(true);
+      setAiConfig(cfg); setTmpConfig(cfg); setIsLoggedIn(true);
       syncOpenTabs(tabs);
     } catch (e) { flash(`Login failed: ${e.message}`, 'err'); }
     setLoading(false);
@@ -211,149 +179,32 @@ export default function ScratchyPad() {
     setPanel(null);
   };
 
-  /* ── Drive ── */
-  const refreshDriveFiles = async () => {
-    setDriveLoad(true);
-    try {
-      setDriveFiles(await drive.listFiles());
-    } catch (e) { flash(`Refresh failed: ${e.message}`, 'err'); }
-    setDriveLoad(false);
+  /* ── Tab handlers ── */
+  const handleNewTab = () => {
+    session.addNewTab(driveOps.driveNames());
+    if (!isLarge) setSidebarOpen(false);
   };
 
-  const driveNames = () => new Set(driveFiles.map(f => f.name));
-  const handleNewTab   = () => { session.addNewTab(driveNames()); if (!isLarge) setSidebarOpen(false); };
   const handleCloseTab = id => {
     const tab = session.getTab(id);
-    if (tab?.dirty) { setCloseTabConfirm(id); return; }
-    session.closeTab(id, driveNames());
+    if (tab?.dirty) { setCloseTabConfirm({ id, filename: tab.filename }); return; }
+    session.closeTab(id, driveOps.driveNames());
   };
-  const handleColorTab = (tabId, color) => session.updateTab(tabId, { color });
+
   const handleRenameTab = (id, name) => {
     const tab = session.getTab(id);
     if (session.tabs.some(t => t.id !== id && t.filename === name)) {
       flash(`"${name}" è già usato da un'altra tab`, 'warn'); return;
     }
-    if (driveFiles.some(f => f.name === name && f.id !== tab?.fileId)) {
+    if (driveOps.driveFiles.some(f => f.name === name && f.id !== tab?.fileId)) {
       flash(`"${name}" è un file già esistente`, 'warn'); return;
     }
     session.updateTab(id, { filename: name });
   };
 
-  const saveTab = async (tabId = session.focusedId) => {
-    const tab = session.getTab(tabId);
-    if (!tab) return;
-    setLoading(true); flash('Saving…');
-    try {
-      const savedId = await drive.saveFile(tab);
-      writeSnippet(savedId, tab.text);
-      session.updateTab(tabId, { fileId: savedId, dirty: false });
-      flash('Saved ✓', 'ok');
-      if (sidebarVisible) refreshDriveFiles();
-    } catch (e) { flash(`Save failed: ${e.message}`, 'err'); }
-    setLoading(false);
-  };
-
-  const loadFromDrive = async (fileId, name) => {
-    setLoading(true);
-    try {
-      const text = await drive.downloadFile(fileId);
-      writeSnippet(fileId, text);
-      session.openInTab(name, text, fileId);
-      if (!isLarge) setSidebarOpen(false);
-      flash('Loaded ✓', 'ok');
-    } catch (e) { flash(`Load failed: ${e.message}`, 'err'); }
-    setLoading(false);
-  };
-
-  const handleDeleteFile = async () => {
-    if (!deleteConfirm) return;
-    setLoading(true);
-    try {
-      await drive.deleteFile(deleteConfirm.fileId);
-      session.tabs
-        .filter(t => t.fileId === deleteConfirm.fileId)
-        .forEach(t => session.updateTab(t.id, { fileId: null, dirty: true }));
-      flash('Deleted ✓', 'ok');
-      setDeleteConfirm(null);
-      refreshDriveFiles();
-    } catch (e) { flash(e.message, 'err'); setDeleteConfirm(null); }
-    setLoading(false);
-  };
-
-  const handleRestoreBackup = (bakFileId, bakName) => {
-    const originalName = bakName.endsWith('.bak') ? bakName.slice(0, -4) : bakName;
-    setRestoreConfirm({ bakFileId, bakName, originalName });
-  };
-
-  const confirmRestore = async () => {
-    if (!restoreConfirm) return;
-    setLoading(true);
-    try {
-      const text = await drive.downloadFile(restoreConfirm.bakFileId);
-      await drive.saveFile({ filename: restoreConfirm.originalName, text, fileId: null });
-      session.tabs
-        .filter(t => t.filename === restoreConfirm.originalName)
-        .forEach(t => session.updateTab(t.id, { text, dirty: false }));
-      flash('Backup ripristinato ✓', 'ok');
-      setRestoreConfirm(null);
-      refreshDriveFiles();
-    } catch (e) { flash(`Restore failed: ${e.message}`, 'err'); setRestoreConfirm(null); }
-    setLoading(false);
-  };
-
-  /* ── AI ── */
-  const runAI = async action => {
-    const content = getSelected();
-    if (!content.trim()) { flash('Nothing to process', 'warn'); return; }
-    const label = typeof action === 'string' ? action : action.label;
-    setLoading(true); setAiLabel(label);
-    setAiAppend((typeof action === 'string' && action === 'Continue') || (typeof action === 'object' && !!action.append));
-    flash(`Running "${label}"…`, 'info', true);
-    try {
-      let result;
-      if (typeof action === 'string') {
-        result = await ai.run(action, content);
-      } else {
-        const prompt = action.prompt.includes('{{text}}')
-          ? action.prompt.replace(/\{\{text\}\}/g, content)
-          : action.prompt + '\n\n' + content;
-        result = await ai.runPrompt(prompt);
-      }
-      setAiResult(result); setPanel('result');
-      clearTimeout(flashTimerRef.current);
-      setStatus({ msg: '', type: 'info' });
-    } catch (e) { flash(`AI error: ${e.message}`, 'err'); }
-    setLoading(false);
-  };
-
-  const applyResult = () => {
-    const tab = session.getTab(session.focusedId);
-    if (!tab) return;
-    const ta = (session.focusedPane === 'left' ? leftTaRef : rightTaRef).current;
-    let newText;
-    if (aiAppend) {
-      const insertPos = ta && ta.selectionStart !== ta.selectionEnd ? ta.selectionEnd : tab.text.length;
-      const sep = tab.text.length > 0 && !tab.text.endsWith('\n') ? '\n' : '';
-      newText = tab.text.substring(0, insertPos) + sep + aiResult + tab.text.substring(insertPos);
-    } else {
-      newText = aiResult;
-      if (ta) {
-        const { selectionStart: ss, selectionEnd: se } = ta;
-        if (ss !== se) newText = tab.text.substring(0, ss) + aiResult + tab.text.substring(se);
-      }
-    }
-    session.updateTab(session.focusedId, { text: newText, dirty: true });
-    setPanel(null); setAiResult('');
-  };
-
-  const applyResultNewTab = () => {
-    const base = session.getTab(session.focusedId)?.filename || 'scratch.md';
-    const tab  = mkTab(session.getNextFilename(base), aiResult, null);
-    session.openInTab(tab.filename, tab.text, null);
-    setPanel(null); setAiResult('');
-  };
-
   /* ── Settings ── */
+  const openSettings = () => { setTmpConfig(aiConfig); setPanel('settings'); };
+
   const saveSettings = async () => {
     setLoading(true);
     try {
@@ -365,24 +216,14 @@ export default function ScratchyPad() {
   };
 
   /* ── Render ── */
-  const openSettings = () => { setTmpConfig(aiConfig); setPanel('settings'); };
-  const focusedTab   = session.getTab(session.focusedId);
-  const focusedText  = focusedTab?.text || '';
-  const words        = focusedText.trim() ? focusedText.trim().split(/\s+/).length : 0;
-  const snippetIndex = readSnippetIndex();
+  const resizeFont    = delta => setFontSize(prev => Math.min(FONT_MAX, Math.max(FONT_MIN, prev + delta)));
+  const focusedTab    = session.getTab(session.focusedId);
+  const focusedText   = focusedTab?.text || '';
+  const words         = focusedText.trim() ? focusedText.trim().split(/\s+/).length : 0;
+  const snippetIndex  = readSnippetIndex();
   const tabColorsByFileId = Object.fromEntries(
     session.tabs.filter(t => t.fileId && t.color).map(t => [t.fileId, t.color])
   );
-  const sidebarProps = {
-    files: driveFiles, loading: driveLoad,
-    snippets: snippetIndex,
-    fileColors: tabColorsByFileId,
-    openTabFileIds: new Set(session.tabs.map(t => t.fileId).filter(Boolean)),
-    onRefresh: refreshDriveFiles, onOpenFile: loadFromDrive,
-    onRestoreBackup: handleRestoreBackup,
-    onNewTab: handleNewTab,
-    onDeleteFile: (fileId, name) => setDeleteConfirm({ fileId, name }),
-  };
 
   if (!isLoggedIn) {
     return <LoginScreen onLogin={login} loading={loading} status={status} />;
@@ -398,7 +239,7 @@ export default function ScratchyPad() {
         hasSplit={!!session.rightTabId}
         onToggleSplit={session.toggleSplit}
         loading={loading}
-        onSave={() => saveTab()}
+        onSave={() => driveOps.saveTab(session.focusedId)}
         onOpenSettings={openSettings}
         dictationMode={dictationMode}
         onToggleDictationMode={() => setDictationMode(m => !m)}
@@ -419,14 +260,28 @@ export default function ScratchyPad() {
         onNewTab={handleNewTab}
         onRenameTab={handleRenameTab}
         onReorderTabs={session.reorderTabs}
-        onColorTab={handleColorTab}
+        onColorTab={(tabId, color) => session.updateTab(tabId, { color })}
       />
 
       <div className={s.content}>
         {isMobile
-          ? <Sidebar open={sidebarOpen} isMobile={true} onClose={() => setSidebarOpen(false)} {...sidebarProps} />
+          ? <Sidebar open={sidebarOpen} isMobile={true} onClose={() => setSidebarOpen(false)}
+              files={driveOps.driveFiles} loading={driveOps.driveLoad}
+              snippets={snippetIndex} fileColors={tabColorsByFileId}
+              openTabFileIds={new Set(session.tabs.map(t => t.fileId).filter(Boolean))}
+              onRefresh={driveOps.refreshDriveFiles} onOpenFile={driveOps.loadFromDrive}
+              onRestoreBackup={driveOps.handleRestoreBackup} onNewTab={handleNewTab}
+              onDeleteFile={(fileId, name) => driveOps.setDeleteConfirm({ fileId, name })}
+            />
           : <div className={s.sidebarWrapper} style={{ width: sidebarVisible ? 220 : 0 }}>
-              <Sidebar open={sidebarVisible} isMobile={false} onClose={() => setSidebarOpen(false)} {...sidebarProps} />
+              <Sidebar open={sidebarVisible} isMobile={false} onClose={() => setSidebarOpen(false)}
+                files={driveOps.driveFiles} loading={driveOps.driveLoad}
+                snippets={snippetIndex} fileColors={tabColorsByFileId}
+                openTabFileIds={new Set(session.tabs.map(t => t.fileId).filter(Boolean))}
+                onRefresh={driveOps.refreshDriveFiles} onOpenFile={driveOps.loadFromDrive}
+                onRestoreBackup={driveOps.handleRestoreBackup} onNewTab={handleNewTab}
+                onDeleteFile={(fileId, name) => driveOps.setDeleteConfirm({ fileId, name })}
+              />
             </div>
         }
 
@@ -471,7 +326,7 @@ export default function ScratchyPad() {
         loading={loading}
         wordCount={words}
         charCount={focusedText.length}
-        onAction={runAI}
+        onAction={aiAct.runAI}
         aiConfigured={isAiConfigured(aiConfig)}
         customActions={aiConfig.customActions || []}
         hiddenActions={hiddenActions}
@@ -497,80 +352,29 @@ export default function ScratchyPad() {
 
       {panel === 'result' && (
         <AIResultModal
-          label={aiLabel}
-          result={aiResult}
-          append={aiAppend}
-          onDiscard={() => { setPanel(null); setAiResult(''); }}
-          onNewTab={applyResultNewTab}
-          onApply={applyResult}
+          label={aiAct.aiLabel}
+          result={aiAct.aiResult}
+          append={aiAct.aiAppend}
+          onDiscard={() => { setPanel(null); aiAct.setAiResult(''); }}
+          onNewTab={aiAct.applyResultNewTab}
+          onApply={aiAct.applyResult}
         />
       )}
 
-      {deleteConfirm && (
-        <Overlay onClose={() => setDeleteConfirm(null)} zIndex={300}>
-          <Modal title="Delete file">
-            <p style={{ fontSize: 13, color: '#5a5570', lineHeight: 1.6, marginBottom: 20 }}>
-              Delete <strong>{deleteConfirm.name}</strong>? This cannot be undone.
-            </p>
-            <Row>
-              <Btn onClick={() => setDeleteConfirm(null)}>Cancel</Btn>
-              <Btn onClick={handleDeleteFile} disabled={loading}
-                style={{ background: '#c46a6a', borderColor: '#c46a6a', color: '#fff' }}>
-                {loading ? '…' : 'Delete'}
-              </Btn>
-            </Row>
-          </Modal>
-        </Overlay>
-      )}
-
-      {closeTabConfirm && (
-        <Overlay onClose={() => setCloseTabConfirm(null)} zIndex={300}>
-          <Modal title="Modifiche non salvate">
-            <p style={{ fontSize: 13, color: '#5a5570', lineHeight: 1.6, marginBottom: 20 }}>
-              La tab <strong>{session.getTab(closeTabConfirm)?.filename}</strong> ha modifiche non salvate.<br />
-              Chiudere senza salvare?
-            </p>
-            <Row>
-              <Btn onClick={() => setCloseTabConfirm(null)}>Annulla</Btn>
-              <Btn onClick={() => { session.closeTab(closeTabConfirm, driveNames()); setCloseTabConfirm(null); }}
-                style={{ background: '#c46a6a', borderColor: '#c46a6a', color: '#fff' }}>
-                Chiudi senza salvare
-              </Btn>
-            </Row>
-          </Modal>
-        </Overlay>
-      )}
-
-      {restoreConfirm && (
-        <Overlay onClose={() => setRestoreConfirm(null)} zIndex={300}>
-          <Modal title="Ripristina backup">
-            <p style={{ fontSize: 13, color: '#5a5570', lineHeight: 1.6, marginBottom: 20 }}>
-              Ripristinare <strong>{restoreConfirm.bakName}</strong> su <strong>{restoreConfirm.originalName}</strong>?<br />
-              Il contenuto attuale del file verrà sovrascritto.
-            </p>
-            <Row>
-              <Btn onClick={() => setRestoreConfirm(null)}>Annulla</Btn>
-              <Btn onClick={confirmRestore} disabled={loading}
-                style={{ background: '#7b6bb0', borderColor: '#7b6bb0', color: '#fff' }}>
-                {loading ? '…' : 'Ripristina'}
-              </Btn>
-            </Row>
-          </Modal>
-        </Overlay>
-      )}
-
-      {errorDialog && (
-        <Overlay onClose={() => setErrorDialog('')} zIndex={300}>
-          <Modal title="Errore">
-            <p style={{ fontSize: 13, color: '#5a5570', lineHeight: 1.6, marginBottom: 20, whiteSpace: 'pre-wrap' }}>
-              {errorDialog}
-            </p>
-            <Row>
-              <Btn accent onClick={() => setErrorDialog('')}>OK</Btn>
-            </Row>
-          </Modal>
-        </Overlay>
-      )}
+      <AppDialogs
+        deleteConfirm={driveOps.deleteConfirm}
+        onCancelDelete={() => driveOps.setDeleteConfirm(null)}
+        onConfirmDelete={driveOps.handleDeleteFile}
+        closeTabConfirm={closeTabConfirm}
+        onCancelCloseTab={() => setCloseTabConfirm(null)}
+        onConfirmCloseTab={() => { session.closeTab(closeTabConfirm.id, driveOps.driveNames()); setCloseTabConfirm(null); }}
+        restoreConfirm={driveOps.restoreConfirm}
+        onCancelRestore={() => driveOps.setRestoreConfirm(null)}
+        onConfirmRestore={driveOps.confirmRestore}
+        errorDialog={errorDialog}
+        onCloseError={() => setErrorDialog('')}
+        loading={loading}
+      />
     </div>
   );
 }
