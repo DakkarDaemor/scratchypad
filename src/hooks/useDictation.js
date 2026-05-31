@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 export function useDictation(onInsert) {
-  const [active, setActive]  = useState(false);
-  const recogRef             = useRef(null);
-  const onInsertRef          = useRef(onInsert);
-  const stoppedRef           = useRef(false);
+  const [active, setActive] = useState(false);
+  const recogRef = useRef(null);
+  const onInsertRef = useRef(onInsert);
+  const stoppedRef = useRef(false);
 
   useEffect(() => { onInsertRef.current = onInsert; }, [onInsert]);
 

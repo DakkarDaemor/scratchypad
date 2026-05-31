@@ -3,9 +3,9 @@ import { KEYS } from '../constants';
 import { mkTab, initSession, nextFilename } from '../utils';
 
 export function useSession() {
-  const [tabs,        setTabs]        = useState(initSession.tabs);
-  const [leftTabId,   setLeftTabId]   = useState(initSession.leftTabId);
-  const [rightTabId,  setRightTabId]  = useState(initSession.rightTabId);
+  const [tabs, setTabs] = useState(initSession.tabs);
+  const [leftTabId, setLeftTabId] = useState(initSession.leftTabId);
+  const [rightTabId, setRightTabId] = useState(initSession.rightTabId);
   const [focusedPane, setFocusedPane] = useState('left');
 
   const focusedId = (focusedPane === 'right' && rightTabId) ? rightTabId : leftTabId;

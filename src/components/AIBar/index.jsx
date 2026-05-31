@@ -16,9 +16,12 @@ function DictaphoneBtn({ dictating, onStart, onStop }) {
   );
 }
 
-export function AIBar({ loading, wordCount, charCount, onAction, aiConfigured, onOpenSettings, status,
-  dictationMode, dictating, onDictStart, onDictStop,
-  customActions = [], hiddenActions = [], onHiddenActionsChange }) {
+export function AIBar({
+  loading, wordCount, charCount, onAction, aiConfigured,
+  onOpenSettings, status, dictationMode, dictating,
+  onDictStart, onDictStop,
+  customActions = [], hiddenActions = [], onHiddenActionsChange,
+}) {
 
   const [configMode, setConfigMode] = useState(false);
   const touchStartY = useRef(null);

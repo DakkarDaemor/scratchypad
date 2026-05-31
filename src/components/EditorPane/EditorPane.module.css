@@ -64,7 +64,11 @@
 .preview hr { border: none; border-top: 1px solid #e8e4f0; margin: 1.2em 0; }
 .preview img { max-width: 100%; }
 .preview table { border-collapse: collapse; margin: 0 0 0.8em; width: 100%; }
-.preview th, .preview td { border: 1px solid #e0daf0; padding: 0.4em 0.7em; font-size: 0.95em; }
+.preview th, .preview td {
+  border: 1px solid #e0daf0;
+  padding: 0.4em 0.7em;
+  font-size: 0.95em;
+}
 .preview th { background: #f5f3fc; font-weight: 500; }
 
 .findBar {

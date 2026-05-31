@@ -28,7 +28,8 @@ export function useGDrive() {
   const logout = () => {
     const tok = localStorage.getItem(KEYS.GDRIVE_TOKEN);
     if (tok && window.google?.accounts?.oauth2) window.google.accounts.oauth2.revoke(tok);
-    [KEYS.GDRIVE_TOKEN, KEYS.GDRIVE_EXPIRY, KEYS.GDRIVE_FOLDER, KEYS.GDRIVE_CONFIG].forEach(k => localStorage.removeItem(k));
+    [KEYS.GDRIVE_TOKEN, KEYS.GDRIVE_EXPIRY, KEYS.GDRIVE_FOLDER, KEYS.GDRIVE_CONFIG]
+      .forEach(k => localStorage.removeItem(k));
   };
 
   const writeConfigFile = async (tok, config) => {
@@ -59,7 +60,7 @@ export function useGDrive() {
       if (r.ok) { const raw = await r.json().catch(() => ({})); return parseConfig(raw); }
       localStorage.removeItem(KEYS.GDRIVE_CONFIG);
     }
-    const q  = encodeURIComponent("name='scratchypad_config.json' and trashed=false");
+    const q = encodeURIComponent("name='scratchypad_config.json' and trashed=false");
     const sr = await authFetch(tok, `/drive/v3/files?q=${q}&fields=files(id)`);
     if (!sr.ok) return { ...DEFAULT_AI_CONFIG };
     const found = await sr.json();
@@ -110,24 +111,24 @@ export function useGDrive() {
   };
 
   const listFiles = async () => {
-    const tok      = await getToken();
+    const tok = await getToken();
     const folderId = await ensureFolder(tok);
-    const q        = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
-    const r        = await authFetch(tok, `/drive/v3/files?q=${q}&fields=files(id,name,modifiedTime)&orderBy=modifiedTime+desc`);
+    const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
+    const r = await authFetch(tok, `/drive/v3/files?q=${q}&fields=files(id,name,modifiedTime)&orderBy=modifiedTime+desc`);
     if (!r.ok) throw new Error(`List failed ${r.status}`);
     const data = await r.json();
     return data.files || [];
   };
 
   const saveFile = async tab => {
-    const tok      = await getToken();
+    const tok = await getToken();
     const folderId = await ensureFolder(tok);
-    const q        = encodeURIComponent(`name='${tab.filename}' and '${folderId}' in parents and trashed=false`);
-    const sr       = await authFetch(tok, `/drive/v3/files?q=${q}&fields=files(id)`);
+    const q = encodeURIComponent(`name='${tab.filename}' and '${folderId}' in parents and trashed=false`);
+    const sr = await authFetch(tok, `/drive/v3/files?q=${q}&fields=files(id)`);
     if (!sr.ok) throw new Error(`Search failed ${sr.status}`);
-    const found   = await sr.json();
+    const found = await sr.json();
     const content = new Blob([tab.text], { type: 'text/plain' });
-    let savedId   = tab.fileId;
+    let savedId = tab.fileId;
     if (found.files?.length) {
       savedId = found.files[0].id;
       await backupFile(tok, savedId, tab.filename, folderId).catch(() => {});

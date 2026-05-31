@@ -32,7 +32,10 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
 
   const addAction = () => {
     if (!newLabel.trim() || !newPrompt.trim()) return;
-    set('customActions', [...customActions, { id: Date.now().toString(), label: newLabel.trim(), prompt: newPrompt.trim(), append: newAppend }]);
+    set('customActions', [
+      ...customActions,
+      { id: Date.now().toString(), label: newLabel.trim(), prompt: newPrompt.trim(), append: newAppend },
+    ]);
     setNewLabel(''); setNewPrompt(''); setNewAppend(false);
   };
   const removeAction = id => set('customActions', customActions.filter(a => a.id !== id));
@@ -73,7 +76,10 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
             <Field label="AI Provider">
               <div className={s.providers}>
                 {PROVIDERS.map(p => (
-                  <label key={p.id} className={`${s.providerRow}${config.provider === p.id ? ` ${s.selected}` : ''}`}>
+                  <label
+                    key={p.id}
+                    className={`${s.providerRow}${config.provider === p.id ? ` ${s.selected}` : ''}`}
+                  >
                     <input
                       type="radio" name="provider" value={p.id}
                       checked={config.provider === p.id}
@@ -92,14 +98,30 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
             </Field>
 
             {config.provider === 'claude' && (
-              <Field label="Claude API Key" hint={<>saved to your Google Drive · <A href="https://console.anthropic.com/settings/keys">console.anthropic.com ↗</A></>}>
-                <Inp type="password" value={config.claudeKey} onChange={e => set('claudeKey', e.target.value)} placeholder="sk-ant-…" />
+              <Field
+                label="Claude API Key"
+                hint={<>saved to your Google Drive · <A href="https://console.anthropic.com/settings/keys">console.anthropic.com ↗</A></>}
+              >
+                <Inp
+                  type="password"
+                  value={config.claudeKey}
+                  onChange={e => set('claudeKey', e.target.value)}
+                  placeholder="sk-ant-…"
+                />
               </Field>
             )}
 
             {config.provider === 'openai' && (<>
-              <Field label="OpenAI API Key" hint={<><A href="https://platform.openai.com/api-keys">platform.openai.com ↗</A> · saved to your Google Drive</>}>
-                <Inp type="password" value={config.openaiKey} onChange={e => set('openaiKey', e.target.value)} placeholder="sk-…" />
+              <Field
+                label="OpenAI API Key"
+                hint={<><A href="https://platform.openai.com/api-keys">platform.openai.com ↗</A> · saved to your Google Drive</>}
+              >
+                <Inp
+                  type="password"
+                  value={config.openaiKey}
+                  onChange={e => set('openaiKey', e.target.value)}
+                  placeholder="sk-…"
+                />
               </Field>
               <Field label="Model" hint={<><A href="https://platform.openai.com/docs/models">available models ↗</A></>}>
                 <Inp value={config.openaiModel} onChange={e => set('openaiModel', e.target.value)} placeholder="gpt-5.4-mini" />
@@ -107,8 +129,16 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
             </>)}
 
             {config.provider === 'gemini' && (<>
-              <Field label="Gemini API Key" hint={<><A href="https://aistudio.google.com/app/apikey">aistudio.google.com ↗</A> · saved to your Google Drive</>}>
-                <Inp type="password" value={config.geminiKey} onChange={e => set('geminiKey', e.target.value)} placeholder="AIza…" />
+              <Field
+                label="Gemini API Key"
+                hint={<><A href="https://aistudio.google.com/app/apikey">aistudio.google.com ↗</A> · saved to your Google Drive</>}
+              >
+                <Inp
+                  type="password"
+                  value={config.geminiKey}
+                  onChange={e => set('geminiKey', e.target.value)}
+                  placeholder="AIza…"
+                />
               </Field>
               <Field label="Model" hint={<><A href="https://ai.google.dev/gemini-api/docs/models">available models ↗</A></>}>
                 <Inp value={config.geminiModel} onChange={e => set('geminiModel', e.target.value)} placeholder="gemini-3.5-flash" />
@@ -116,8 +146,16 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
             </>)}
 
             {config.provider === 'openrouter' && (<>
-              <Field label="OpenRouter API Key" hint={<><A href="https://openrouter.ai/settings/keys">openrouter.ai ↗</A> · saved to your Google Drive</>}>
-                <Inp type="password" value={config.openrouterKey} onChange={e => set('openrouterKey', e.target.value)} placeholder="sk-or-…" />
+              <Field
+                label="OpenRouter API Key"
+                hint={<><A href="https://openrouter.ai/settings/keys">openrouter.ai ↗</A> · saved to your Google Drive</>}
+              >
+                <Inp
+                  type="password"
+                  value={config.openrouterKey}
+                  onChange={e => set('openrouterKey', e.target.value)}
+                  placeholder="sk-or-…"
+                />
               </Field>
               <Field label="Model" hint={<><A href="https://openrouter.ai/models">browse models ↗</A> · append ":free" for free tier</>}>
                 <Inp value={config.openrouterModel} onChange={e => set('openrouterModel', e.target.value)} placeholder="openai/gpt-oss-120b:free" />
@@ -125,8 +163,16 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
             </>)}
 
             {config.provider === 'groq' && (<>
-              <Field label="Groq API Key" hint={<><A href="https://console.groq.com/keys">console.groq.com ↗</A> · free tier · saved to your Google Drive</>}>
-                <Inp type="password" value={config.groqKey} onChange={e => set('groqKey', e.target.value)} placeholder="gsk_…" />
+              <Field
+                label="Groq API Key"
+                hint={<><A href="https://console.groq.com/keys">console.groq.com ↗</A> · free tier · saved to your Google Drive</>}
+              >
+                <Inp
+                  type="password"
+                  value={config.groqKey}
+                  onChange={e => set('groqKey', e.target.value)}
+                  placeholder="gsk_…"
+                />
               </Field>
               <Field label="Model" hint={<><A href="https://console.groq.com/docs/models">available models ↗</A></>}>
                 <Inp value={config.groqModel} onChange={e => set('groqModel', e.target.value)} placeholder="llama-3.3-70b-versatile" />
@@ -148,7 +194,9 @@ export function SettingsModal({ config, onConfigChange, loading, onSave, onLogou
                           {a.label}
                           {a.append && <span className={s.appendBadge}>append</span>}
                         </span>
-                        <span className={s.customActionPrompt}>{a.prompt.length > 60 ? a.prompt.slice(0, 60) + '…' : a.prompt}</span>
+                        <span className={s.customActionPrompt}>
+                          {a.prompt.length > 60 ? a.prompt.slice(0, 60) + '…' : a.prompt}
+                        </span>
                       </div>
                       <button className={s.customActionDel} onClick={() => removeAction(a.id)} title="Remove">×</button>
                     </div>

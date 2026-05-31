@@ -59,7 +59,10 @@ export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, is
     const h = e => { if (!popoverRef.current?.contains(e.target)) setPopover(null); };
     document.addEventListener('mousedown', h);
     document.addEventListener('touchstart', h);
-    return () => { document.removeEventListener('mousedown', h); document.removeEventListener('touchstart', h); };
+    return () => {
+      document.removeEventListener('mousedown', h);
+      document.removeEventListener('touchstart', h);
+    };
   }, [!!popover]);
 
   useLayoutEffect(() => {
@@ -70,7 +73,13 @@ export function TabBar({ tabs, focusedId, leftTabId, rightTabId, focusedPane, is
   }, [popover?.tabId]);
 
   const openPopover = (tab, rect) => {
-    setPopover({ tabId: tab.id, x: rect.left, y: rect.bottom + 4, draftName: stripExt(tab.filename), color: tab.color || null });
+    setPopover({
+      tabId: tab.id,
+      x: rect.left,
+      y: rect.bottom + 4,
+      draftName: stripExt(tab.filename),
+      color: tab.color || null,
+    });
   };
 
   const commitPopoverRename = () => {

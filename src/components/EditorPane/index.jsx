@@ -99,7 +99,11 @@ function FindBar({ text, taRef, mode, onTextChange, onClose }) {
   );
 }
 
-export function EditorPane({ tab, focused, taRef, hasSplit, isMobile, onFocus, onChange, fontSize, onFontResize, markdownEnabled, findTrigger, onFindTriggered }) {
+export function EditorPane({
+  tab, focused, taRef, hasSplit, isMobile,
+  onFocus, onChange, fontSize, onFontResize,
+  markdownEnabled, findTrigger, onFindTriggered,
+}) {
   const pinchRef = useRef(null);
   const [mdPreview, setMdPreview] = useState(false);
   const [findOpen,  setFindOpen]  = useState(false);

@@ -29,7 +29,7 @@ import s from './App.module.css';
 
 export default function ScratchyPad() {
   const session = useSession();
-  const drive   = useGDrive();
+  const drive = useGDrive();
 
   const [aiConfig,       setAiConfig]       = useState({ ...DEFAULT_AI_CONFIG });
   const [tmpConfig,      setTmpConfig]      = useState({ ...DEFAULT_AI_CONFIG });
@@ -205,7 +205,10 @@ export default function ScratchyPad() {
 
   const logout = () => {
     drive.logout();
-    setIsLoggedIn(false); setAiConfig({ ...DEFAULT_AI_CONFIG }); setTmpConfig({ ...DEFAULT_AI_CONFIG }); setPanel(null);
+    setIsLoggedIn(false);
+    setAiConfig({ ...DEFAULT_AI_CONFIG });
+    setTmpConfig({ ...DEFAULT_AI_CONFIG });
+    setPanel(null);
   };
 
   /* ── Drive ── */
