@@ -26,6 +26,10 @@ export const initSession = (() => {
     if (Array.isArray(s?.tabs) && s.tabs.length > 0) return s;
   } catch {}
   const t = mkTab();
+  if (window.innerWidth >= 1200) {
+    const t2 = mkTab('scratch_2.md');
+    return { tabs: [t, t2], leftTabId: t.id, rightTabId: t2.id };
+  }
   return { tabs: [t], leftTabId: t.id, rightTabId: null };
 })();
 
