@@ -22,6 +22,7 @@ export const KEYS = {
   GDRIVE_EXPIRY:  'sp_gdrive_expiry',
   GDRIVE_FOLDER:  'sp_gdrive_folder',
   GDRIVE_CONFIG:  'sp_gdrive_config_id',
+  GDRIVE_HINT:    'sp_gdrive_hint',
   SESSION:        'sp_session',
   FONT_SIZE:      'sp_font_size',
   SNIPPET_INDEX:  'sp_snippet_index',

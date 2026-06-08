@@ -6,18 +6,31 @@ export function useGDrive() {
   const authFetch = (tok, path, { headers: extra = {}, ...opts } = {}) =>
     fetch(`${API}${path}`, { ...opts, headers: { Authorization: `Bearer ${tok}`, ...extra } });
 
+  const saveHint = async tok => {
+    try {
+      const r = await fetch(`${API}/oauth2/v3/userinfo`, { headers: { Authorization: `Bearer ${tok}` } });
+      if (r.ok) {
+        const { email } = await r.json();
+        if (email) localStorage.setItem(KEYS.GDRIVE_HINT, email);
+      }
+    } catch {}
+  };
+
   const getToken = () => new Promise((resolve, reject) => {
     if (!window.google?.accounts?.oauth2) { reject(new Error('Google API not loaded')); return; }
-    const tok = localStorage.getItem(KEYS.GDRIVE_TOKEN);
-    const exp = Number(localStorage.getItem(KEYS.GDRIVE_EXPIRY) || 0);
+    const tok  = localStorage.getItem(KEYS.GDRIVE_TOKEN);
+    const exp  = Number(localStorage.getItem(KEYS.GDRIVE_EXPIRY) || 0);
     if (tok && Date.now() < exp) { resolve(tok); return; }
+    const hint = localStorage.getItem(KEYS.GDRIVE_HINT) || '';
     const tc = window.google.accounts.oauth2.initTokenClient({
       client_id: GDRIVE_CLIENT_ID,
       scope: 'https://www.googleapis.com/auth/drive.file',
+      ...(hint ? { hint, prompt: '' } : {}),
       callback: resp => {
         if (resp.error) { reject(new Error(resp.error_description || resp.error)); return; }
         localStorage.setItem(KEYS.GDRIVE_TOKEN, resp.access_token);
         localStorage.setItem(KEYS.GDRIVE_EXPIRY, String(Date.now() + (resp.expires_in - 60) * 1000));
+        if (!hint) saveHint(resp.access_token);
         resolve(resp.access_token);
       },
       error_callback: e => reject(new Error(e.type || 'Auth failed')),
@@ -28,7 +41,7 @@ export function useGDrive() {
   const logout = () => {
     const tok = localStorage.getItem(KEYS.GDRIVE_TOKEN);
     if (tok && window.google?.accounts?.oauth2) window.google.accounts.oauth2.revoke(tok);
-    [KEYS.GDRIVE_TOKEN, KEYS.GDRIVE_EXPIRY, KEYS.GDRIVE_FOLDER, KEYS.GDRIVE_CONFIG]
+    [KEYS.GDRIVE_TOKEN, KEYS.GDRIVE_EXPIRY, KEYS.GDRIVE_FOLDER, KEYS.GDRIVE_CONFIG, KEYS.GDRIVE_HINT]
       .forEach(k => localStorage.removeItem(k));
   };
 
