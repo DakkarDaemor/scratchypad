@@ -128,10 +128,10 @@ export default function ScratchyPad() {
   useEffect(() => { localStorage.setItem(KEYS.HIDDEN_ACTIONS, JSON.stringify(hiddenActions)); }, [hiddenActions]);
 
   useEffect(() => {
-    const tok = localStorage.getItem('sp_gdrive_token');
-    const exp = Number(localStorage.getItem('sp_gdrive_expiry') || 0);
+    const tok = localStorage.getItem(KEYS.GDRIVE_TOKEN);
+    const exp = Number(localStorage.getItem(KEYS.GDRIVE_EXPIRY) || 0);
     if (tok && Date.now() < exp) {
-      drive.loadConfig(tok)
+      drive.loadConfig()
         .then(cfg => { setAiConfig(cfg); setTmpConfig(cfg); setIsLoggedIn(true); syncOpenTabs(session.tabs); })
         .catch(() => {});
     }
@@ -162,8 +162,7 @@ export default function ScratchyPad() {
   const login = async () => {
     setLoading(true);
     try {
-      const tok  = await drive.getToken();
-      const cfg  = await drive.loadConfig(tok);
+      const cfg  = await drive.loadConfig();
       const tabs = session.tabs;
       setAiConfig(cfg); setTmpConfig(cfg); setIsLoggedIn(true);
       syncOpenTabs(tabs);
@@ -208,8 +207,7 @@ export default function ScratchyPad() {
   const saveSettings = async () => {
     setLoading(true);
     try {
-      const tok = await drive.getToken();
-      await drive.writeConfigFile(tok, tmpConfig);
+      await drive.writeConfigFile(tmpConfig);
       setAiConfig(tmpConfig); setPanel(null); flash('Settings saved ✓', 'ok');
     } catch (e) { flash(`Save failed: ${e.message}`, 'err'); }
     setLoading(false);
