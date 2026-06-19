@@ -128,12 +128,29 @@ export default function ScratchyPad() {
   useEffect(() => { localStorage.setItem(KEYS.HIDDEN_ACTIONS, JSON.stringify(hiddenActions)); }, [hiddenActions]);
 
   useEffect(() => {
-    const tok = localStorage.getItem(KEYS.GDRIVE_TOKEN);
-    const exp = Number(localStorage.getItem(KEYS.GDRIVE_EXPIRY) || 0);
-    if (tok && Date.now() < exp) {
+    const tok  = localStorage.getItem(KEYS.GDRIVE_TOKEN);
+    const exp  = Number(localStorage.getItem(KEYS.GDRIVE_EXPIRY) || 0);
+    const hint = localStorage.getItem(KEYS.GDRIVE_HINT);
+
+    const autoLogin = () => {
+      setLoading(true);
       drive.loadConfig()
         .then(cfg => { setAiConfig(cfg); setTmpConfig(cfg); setIsLoggedIn(true); syncOpenTabs(session.tabs); })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    };
+
+    if (tok && Date.now() < exp) {
+      autoLogin();
+    } else if (hint) {
+      // Token scaduto ma utente noto: tenta refresh silenzioso (prompt:'') senza UI
+      if (window.google?.accounts?.oauth2) {
+        autoLogin();
+      } else {
+        // GIS non ancora caricato (script async) — aspetta il callback
+        const prev = window.onGoogleLibraryLoad;
+        window.onGoogleLibraryLoad = () => { if (prev) prev(); autoLogin(); };
+      }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
